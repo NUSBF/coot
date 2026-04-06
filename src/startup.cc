@@ -185,6 +185,8 @@ startup_realize(GtkWidget *gl_area) {
    g.tmesh_for_labels.setup_camera_facing_quad(x_scale, y_scale, 0.0, 0.0);
    g.setup_hud_geometry_bars();
    g.setup_hud_buttons();
+   g.setup_pandda_inspect_hud_buttons();
+   g.setup_pandda_inspect_hud_stats_bars();
    g.setup_rama_balls();
    g.setup_key_bindings();
    float double_rama_size = 0.8; // scaled by 0.5 in the gl-rama draw call.
