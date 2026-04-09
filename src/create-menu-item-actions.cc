@@ -3891,6 +3891,14 @@ void superpose_ligands_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    safe_python_command("coot_gui.superpose_ligand_gui()");
 }
 
+void pandda(); // defined in pandda-inspect.cc
+
+void pandda2_inspect_action(G_GNUC_UNUSED GSimpleAction *simple_action,
+                            G_GNUC_UNUSED GVariant *parameter,
+                            G_GNUC_UNUSED gpointer user_data) {
+   pandda();
+}
+
 void split_water_action(G_GNUC_UNUSED GSimpleAction *simple_action,
 			G_GNUC_UNUSED GVariant *parameter,
 			G_GNUC_UNUSED gpointer user_data) {
@@ -6175,6 +6183,7 @@ create_actions(GtkApplication *application) {
    add_action(  "rigid_body_fit_residue_ranges_action",   rigid_body_fit_residue_ranges_action);
    add_action(        "rigid_body_fit_molecule_action",         rigid_body_fit_molecule_action);
    add_action(              "superpose_ligands_action",               superpose_ligands_action);
+   add_action(             "pandda2_inspect_action",                  pandda2_inspect_action);
    add_action(                    "split_water_action",                     split_water_action);
    add_action("symm_shift_reference_chain_here_action", symm_shift_reference_chain_here_action);
    add_action(          "other_modelling_tools_action",           other_modelling_tools_action);
