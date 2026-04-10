@@ -1075,10 +1075,6 @@
       <!--   <attribute name="label">HOLE</attribute> -->
       <!--   <attribute name="action">app.add_HOLE_module_action</attribute> -->
       <!-- </item> -->
-      <item>
-        <attribute name="label">Ligand</attribute>
-        <attribute name="action">app.add_ligand_module_action</attribute>
-      </item>
       <!-- 20250115-PE this also is a hunk of pythonic gui - remove for now -->
       <!-- <item> -->
       <!--   <attribute name="label">ProSMART</attribute> -->
