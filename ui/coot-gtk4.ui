@@ -823,6 +823,28 @@
 
     <submenu>
       <attribute name="label">Extensions</attribute>
+      <section>
+        <item>
+          <attribute name="label">CCP4</attribute>
+          <attribute name="action">app.add_ccp4_module_action</attribute>
+        </item>
+        <item>
+          <attribute name="label">Cryo-EM</attribute>
+          <attribute name="action">app.add_cryo_em_module_action</attribute>
+        </item>
+        <item>
+          <attribute name="label">Restraints</attribute>
+          <attribute name="action">app.add_restraints_module_action</attribute>
+        </item>
+        <item>
+          <attribute name="label">Refine</attribute>
+          <attribute name="action">app.add_refine_module_action</attribute>
+        </item>
+        <item>
+          <attribute name="label">Views</attribute>
+          <attribute name="action">app.add_views_module_action</attribute>
+        </item>
+      </section>
       <submenu>
         <attribute name="label">Ligand</attribute>
         <section>
@@ -6957,16 +6979,6 @@ Do you want to continue?
                 </object>
               </child>
 
-              <child>
-                <object class="GtkMenuButton" id="add_module_menubutton">
-                  <property name="label" translatable="yes">+</property>
-                  <property name="tooltip-text">Load an extension module</property>
-                  <property name="can-focus">0</property>
-                  <!-- <signal name="clicked" handler="on_add_module_menubutton_clicked" swapped="no"/> -->
-                  <property name="margin-start">6</property>
-                  <property name="halign">end</property>
-                </object>
-              </child>
 
               <child>
                 <object class="GtkButton" id="python_scripting_button">
