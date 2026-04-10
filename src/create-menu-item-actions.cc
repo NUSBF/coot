@@ -2951,6 +2951,7 @@ void add_views_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    gtk_box_append(GTK_BOX(outer_box), views_hbox);
 
    gtk_box_append(GTK_BOX(toolbar_hbox), view_menubutton);
+   g_simple_action_set_enabled(simple_action, FALSE);
 
 }
 
