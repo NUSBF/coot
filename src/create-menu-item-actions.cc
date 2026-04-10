@@ -2697,16 +2697,7 @@ void add_ligand_module_action(GSimpleAction *simple_action,
    // Show Chemical Features
    // Quick Ligand Validate
 
-   GtkWidget *toolbar_hbox = widget_from_builder("main_window_toolbar_hbox");
-   GtkWidget *menubutton = gtk_menu_button_new();
-   gtk_menu_button_set_label(GTK_MENU_BUTTON(menubutton), "Ligand");
-   gtk_box_append(GTK_BOX(toolbar_hbox), menubutton);
-
-   GtkWidget *menu = widget_from_builder("ligand-menu");
-   GMenuModel *model = G_MENU_MODEL(menu);
-   GtkWidget *popover = gtk_popover_menu_new_from_model(model);
-   gtk_menu_button_set_popover(GTK_MENU_BUTTON(menubutton), popover);
-
+   // Ligand entries are now in Extensions > Ligand in the menubar - no toolbar button needed
    g_simple_action_set_enabled(simple_action,FALSE);
    graphics_info_t::graphics_grab_focus();
 }
