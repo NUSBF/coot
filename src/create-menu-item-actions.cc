@@ -2719,6 +2719,33 @@ void add_rcrane_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    info_dialog("INFO:: No RCrane interface yet");
 }
 
+// Helper: wrap a toolbar widget with a × close button.
+// Appends the wrapper to toolbar_hbox, disables the action, and re-enables it when closed.
+static void wrap_toolbar_widget_with_close(GtkWidget *toolbar_hbox,
+                                           GtkWidget *widget,
+                                           GSimpleAction *action) {
+   GtkWidget *wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+   gtk_box_append(GTK_BOX(wrapper), widget);
+
+   GtkWidget *close_btn = gtk_button_new_with_label("×");
+   gtk_widget_set_tooltip_text(close_btn, "Remove from toolbar");
+
+   struct CloseData { GtkWidget *wrapper; GSimpleAction *action; };
+   auto *cd = new CloseData{wrapper, action};
+
+   auto close_clicked = +[] (GtkButton *, gpointer data) {
+      auto *cd = static_cast<CloseData *>(data);
+      GtkWidget *parent = gtk_widget_get_parent(cd->wrapper);
+      gtk_box_remove(GTK_BOX(parent), cd->wrapper);
+      g_simple_action_set_enabled(cd->action, TRUE);
+      delete cd;
+   };
+   g_signal_connect(G_OBJECT(close_btn), "clicked", G_CALLBACK(close_clicked), cd);
+   gtk_box_append(GTK_BOX(wrapper), close_btn);
+   gtk_box_append(GTK_BOX(toolbar_hbox), wrapper);
+   g_simple_action_set_enabled(action, FALSE);
+}
+
 void add_restraints_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
                                   G_GNUC_UNUSED GVariant *parameter,
                                   G_GNUC_UNUSED gpointer user_data) {
@@ -2737,7 +2764,7 @@ void add_restraints_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    GtkWidget *popover = gtk_popover_menu_new_from_model(model);
    gtk_menu_button_set_popover(GTK_MENU_BUTTON(menubutton), popover);
 
-   g_simple_action_set_enabled(simple_action,FALSE);
+   wrap_toolbar_widget_with_close(toolbar_hbox, menubutton, simple_action);
    graphics_info_t::graphics_grab_focus();
 }
 
@@ -2761,7 +2788,6 @@ void add_refine_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
       GtkWidget *toolbar_hbox = widget_from_builder("main_window_toolbar_hbox");
       GtkWidget *menubutton = gtk_menu_button_new();
       gtk_menu_button_set_label(GTK_MENU_BUTTON(menubutton), "Refine");
-      gtk_box_append(GTK_BOX(toolbar_hbox), menubutton);
 
       // because we use a grid for the widgets, we can't/don't use the popover menu
 
@@ -2860,9 +2886,10 @@ void add_refine_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
       gtk_widget_set_margin_start(box, 6);
       gtk_widget_set_margin_end(box, 6);
       gtk_widget_set_size_request(popover, 310, 150);
+
+      wrap_toolbar_widget_with_close(toolbar_hbox, menubutton, simple_action);
    }
 
-   g_simple_action_set_enabled(simple_action, FALSE);
    graphics_info_t::graphics_grab_focus();
 }
 
@@ -2950,8 +2977,7 @@ void add_views_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    gtk_box_append(GTK_BOX(outer_box), content_box);
    gtk_box_append(GTK_BOX(outer_box), views_hbox);
 
-   gtk_box_append(GTK_BOX(toolbar_hbox), view_menubutton);
-   g_simple_action_set_enabled(simple_action, FALSE);
+   wrap_toolbar_widget_with_close(toolbar_hbox, view_menubutton, simple_action);
 
 }
 
