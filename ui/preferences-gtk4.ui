@@ -15,8 +15,8 @@
   </object>
   <object class="GtkDialog" id="preferences_dialog">
     <property name="title" translatable="yes">Coot: Preferences</property>
-    <property name="default-width">820</property>
-    <property name="default-height">480</property>
+    <property name="default-width">1640</property>
+    <property name="default-height">960</property>
     <signal name="close-request" handler="on_preferences_close_request" swapped="no"/>
     <child>
       <object class="GtkBox" id="dialog-vbox77">
