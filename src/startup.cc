@@ -1178,27 +1178,6 @@ startup_application_activate(GtkApplication *application,
       handle_command_line_data(activate_data->cld);
 
 
-      // 20251019-PE is this the first time Coot-1 has been started?
-      {
-         bool show_first_startup_dialog = true;
-         xdg_t xdg;
-         std::filesystem::path state_home = xdg.get_state_home();
-         if (std::filesystem::exists(state_home)) {
-            std::filesystem::path state_py = state_home / "0-coot.state.py";
-            if (std::filesystem::exists(state_py)) {
-               show_first_startup_dialog = false;
-            }
-         }
-         if (show_first_startup_dialog) {
-            GtkWidget *dialog = widget_from_builder("first-startup-dialog");
-            GtkWidget *main_window_widget = graphics_info_t::get_main_window();
-            if (main_window_widget) {
-               GtkWindow *main_window = GTK_WINDOW(main_window_widget);
-               gtk_window_set_transient_for(GTK_WINDOW(dialog), main_window);
-            }
-            gtk_widget_set_visible(dialog, TRUE);
-         }
-      }
 
       // load_tutorial_model_and_data();
       delete activate_data;
