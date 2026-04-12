@@ -144,7 +144,9 @@ extern "C" G_MODULE_EXPORT
 gboolean
 on_preferences_close_request(GtkWidget       *dialog,
                              gpointer         user_data) {
+   save_preferences();
    gtk_widget_set_visible(dialog, FALSE);
+   clear_preferences();
    graphics_info_t g;
    g.graphics_grab_focus();
    return TRUE; // has been handled - no need to find another handler.
