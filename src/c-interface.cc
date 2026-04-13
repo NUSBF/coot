@@ -122,6 +122,7 @@
 
 // #include "xmap-interface.h"
 #include "graphics-info.h"
+#include "coot-preferences.h"
 
 #include "skeleton/BuildCas.h"
 
@@ -3988,6 +3989,8 @@ std::pair<short int, int> int_from_entry(GtkWidget *entry) {
 void set_smooth_scroll_flag(int v) {
 
    graphics_info_t::smooth_scroll = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_SMOOTH_SCROLL, v);
 }
 
 int  get_smooth_scroll() {
@@ -4010,7 +4013,9 @@ void set_smooth_scroll_steps_str(const char *text) {
 
 // useful interface for scripting
 void set_smooth_scroll_steps(int v) {
-      graphics_info_t::smooth_scroll_n_steps = v;
+   graphics_info_t::smooth_scroll_n_steps = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_SMOOTH_SCROLL_STEPS, v);
 }
 
 
@@ -4042,6 +4047,8 @@ void  set_smooth_scroll_limit_str(const char *text) {
 // useful for scripting
 void set_smooth_scroll_limit(float lim) {
    graphics_info_t::smooth_scroll_limit = lim;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_SMOOTH_SCROLL_LIMIT, lim);
 }
 
 char *get_text_for_smooth_scroll_limit() {
