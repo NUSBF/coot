@@ -6937,6 +6937,30 @@ Do you want to continue?
               </child>
 
               <child>
+                <object class="GtkButton" id="toolbar_map_button">
+                  <property name="can-focus">0</property>
+                  <child>
+                    <object class="GtkBox">
+                      <property name="orientation">vertical</property>
+                      <property name="spacing">5</property>
+                      <property name="halign">start</property>
+                      <child>
+                        <object class="GtkImage">
+                          <property name="icon-name">select-map</property>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkLabel">
+                          <property name="label" translatable="yes">Map...</property>
+                        </object>
+                      </child>
+                    </object>
+                  </child>
+                  <signal name="clicked" handler="on_model_toolbar_select_map_button_clicked" swapped="no"/>
+                </object>
+              </child>
+
+              <child>
                 <object class="GtkButton" id="go_to_atom_button">
                   <property name="can-focus">0</property>
                   <child>
@@ -10947,29 +10971,6 @@ Do you want to continue?
             <!-- <style> -->
             <!--   <class name="toolbar"/> -->
             <!-- </style> -->
-            <child>
-              <object class="GtkButton" id="vertical_toolbar_map_button">
-                <child>
-                  <object class="GtkBox">
-                    <property name="orientation">horizontal</property>
-                    <property name="halign">start</property>
-                    <property name="spacing">5</property>
-                    <child>
-                      <object class="GtkImage">
-
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="yes">Map...</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <property name="can-focus">0</property>
-                <signal name="clicked" handler="on_model_toolbar_select_map_button_clicked" swapped="no"/>
-              </object>
-            </child>
             <child>
               <object class="GtkToggleButton" id="select_residue_range_toggle_button">
                 <property name="can-focus">0</property>
