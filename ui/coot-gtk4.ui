@@ -1100,14 +1100,7 @@
         <attribute name="label" translatable="yes">RSR Sphere</attribute>
         <attribute name="action">app.refine_sphere</attribute>
       </item>
-      <item>
-        <attribute name="label" translatable="yes">RSR Big Sphere</attribute>
-        <attribute name="action">app.refine_sphere_big</attribute>
-      </item>
-      <item>
-        <attribute name="label" translatable="yes">RSR Tandem ± 3</attribute>
-        <attribute name="action">app.refine_tandem_3</attribute>
-      </item>
+
       <item>
         <attribute name="label" translatable="yes">RSR Tandem ± 5</attribute>
         <attribute name="action">app.refine_tandem_5</attribute>
@@ -1128,10 +1121,7 @@
         <attribute name="label" translatable="yes">RSR Range Refine</attribute>
         <attribute name="action">app.refine_range</attribute>
       </item>
-      <item>
-        <attribute name="label" translatable="yes">RSR Repeat Range Refine</attribute>
-        <attribute name="action">app.repeat_refine_range</attribute>
-      </item>
+
       <item>
         <attribute name="label" translatable="yes">RSR Fragment</attribute>
         <attribute name="action">app.refine_fragment</attribute>
