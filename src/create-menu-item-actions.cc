@@ -5063,17 +5063,7 @@ refine_range(G_GNUC_UNUSED GSimpleAction *simple_action,
              G_GNUC_UNUSED GVariant *parameter,
              G_GNUC_UNUSED gpointer user_data) {
 
-   graphics_info_t g;
-   std::cout << "in refine_range with in_range_define " << g.in_range_define << std::endl;
-   if (g.in_range_define == 2) {
-      // so what were the two atoms?
-
-      refine_with_range_picked_atoms();
-
-   } else {
-      std::string m = "Use the Range button to define a residue range (pick 2 atoms)";
-      g.add_status_bar_text(m);
-   }
+   do_refine(1);
 }
 
 

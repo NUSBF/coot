@@ -10971,29 +10971,6 @@ Do you want to continue?
             <!-- <style> -->
             <!--   <class name="toolbar"/> -->
             <!-- </style> -->
-            <child>
-              <object class="GtkToggleButton" id="select_residue_range_toggle_button">
-                <property name="can-focus">0</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="orientation">horizontal</property>
-                    <property name="spacing">5</property>
-                    <property name="halign">start</property>
-                    <child>
-                      <object class="GtkImage">
-
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="yes">Range/Pair</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <signal name="toggled" handler="on_model_toolbar_range_define_togglebutton_toggled" swapped="no"/>
-              </object>
-            </child>
 
             <child>
               <object class="GtkMenuButton" id="refine_menubutton">
