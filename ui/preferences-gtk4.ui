@@ -230,6 +230,7 @@
                               <object class="GtkBox">
                                 <property name="orientation">horizontal</property>
                                 <property name="spacing">6</property>
+                                <property name="halign">center</property>
 
                                 <!-- Left column: Left click / Left drag / Ctrl+Left drag / B4 / B5 -->
                                 <child>
