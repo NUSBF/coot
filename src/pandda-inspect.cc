@@ -7,9 +7,7 @@
 #include <iostream>
 #include <unordered_map>
 
-#include <gtk/gtk.h>
-
-#include "utils/coot-utils.hh"
+#include "graphics-info.h"
 
 class pandda_event_store_t {
 
@@ -103,56 +101,29 @@ pandda_event_store_t parse_pandda_analyse_events(const std::string &file_name) {
 
 void pandda() {
 
-   std::cout << "starting panda" << std::endl;
-
-   auto widget_from_builder = [] (const std::string &w_name, GtkBuilder *builder) {
-      GtkWidget *w = GTK_WIDGET(gtk_builder_get_object(GTK_BUILDER(builder), w_name.c_str()));
-      return  w;
-   };
-
-   auto fill_widget = [widget_from_builder] (const std::string &widget_id, GtkBuilder *builder,
-                          const std::string &dtag,
-                          const std::string &key,
-                          const pandda_event_store_t &pes) {
-
-      GtkWidget *w = widget_from_builder(widget_id, builder);
-      if (w) {
-         std::optional<std::string> s = pes.get_data(dtag, key);
-         if (s) {
-            GtkTextBuffer *buffer = gtk_text_buffer_new(nullptr);
-            gtk_text_view_set_buffer(GTK_TEXT_VIEW(w), buffer);
-            GtkTextIter end_iter;
-            gtk_text_buffer_get_end_iter(buffer, &end_iter);
-            gtk_text_buffer_insert(buffer, &end_iter, s.value().c_str(), -1);
-         } else {
-            std::cout << "Failed to find data for dtag: " << dtag << " key: " << key << std::endl;
-         }
-      } else {
-         std::cout << "Failed to find widget with id : " << widget_id << std::endl;
-      }
-   };
+   std::cout << "starting pandda inspect" << std::endl;
 
    std::string dtag = "0";
-   std::string paefn = "pandda_analyse_events.csv";
-   {
-      std::string fn = "Pandda2InspectGTK4Window.ui";
-      GtkBuilder *builder = gtk_builder_new_from_file(fn.c_str()) ;
-      GtkWidget *dialog = widget_from_builder("Pandda2InspectWindow", builder);
-      std::cout << "dialog " << dialog << std::endl;
-      gtk_widget_set_visible(dialog, TRUE);
-      pandda_event_store_t pes = parse_pandda_analyse_events(paefn);
+   pandda_event_store_t pes = parse_pandda_analyse_events("pandda_analyse_events.csv");
 
-      fill_widget("gtkTextViewBTC",         builder, dtag, "1-BDC",     pes);
-      fill_widget("gtkTextViewDatasetID",   builder, dtag, dtag,        pes);
-      fill_widget("gtkTextViewEventNumber", builder, dtag, "event_idx", pes);
-      fill_widget("gtkTextViewResolution",  builder, dtag, "high_resolution", pes);
-      fill_widget("gtkTextViewMap",         builder, dtag, "map_uncertainty", pes);
-      fill_widget("gtkTextViewBlobPeak",    builder, dtag, "z_peak", pes);
-      fill_widget("gtkTextViewBlobSize",    builder, dtag, "z_mean", pes);
+   auto get_float = [&](const std::string &key) -> float {
+      auto s = pes.get_data(dtag, key);
+      if (s) {
+         try { return std::stof(s.value()); } catch (...) {}
+      }
+      return 0.5f;
+   };
 
-      // this one doesn't fit - we will have to do it separately.
-      fill_widget("gtkTextViewRFree",       builder, dtag, "r_free", pes);
-   }
+   float bdc        = get_float("1-BDC");
+   float rfree      = get_float("r_free");
+   float resolution = get_float("high_resolution");
+   float zpeak      = get_float("z_peak");
+   float map_sigma  = get_float("map_uncertainty");
+
+   graphics_info_t g;
+   g.show_pandda_inspect_hud_buttons();
+   g.update_pandda_inspect_hud_stats_bars(bdc, rfree, resolution, zpeak, map_sigma);
+   g.graphics_draw();
 }
- 
+
 

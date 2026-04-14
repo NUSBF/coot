@@ -4416,6 +4416,21 @@ string   static std::string sessionid;
    static HUDMesh mesh_for_hud_buttons;
    static std::vector<HUD_button_info_t> hud_button_info;
 
+   void setup_pandda_inspect_hud_buttons();
+   void show_pandda_inspect_hud_buttons();
+   void hide_pandda_inspect_hud_buttons();
+   static void draw_pandda_inspect_hud_buttons();
+   static HUDMesh mesh_for_pandda_inspect_hud_buttons;
+   static std::vector<HUD_button_info_t> pandda_inspect_hud_button_info;
+   static bool pandda_inspect_hud_is_active;
+
+   // pandda inspect stats bars (top of screen)
+   void setup_pandda_inspect_hud_stats_bars();
+   void update_pandda_inspect_hud_stats_bars(float bdc, float rfree, float resolution, float zpeak, float map_sigma);
+   static void draw_pandda_inspect_hud_stats_bars();
+   static HUDMesh mesh_for_pandda_inspect_hud_stats_bars;
+   static std::vector<HUD_bar_attribs_t> pandda_inspect_hud_stats_bars;
+
 
    void show_test_buttons(); // testing function
    // when the HUD buttons are shown, we want to show the atom pull buttons too

@@ -3079,6 +3079,245 @@ graphics_info_t::clear_hud_buttons() {
    mesh_for_hud_buttons.update_instancing_buffer_data(hud_button_info); // empty
 }
 
+void
+graphics_info_t::setup_pandda_inspect_hud_buttons() {
+
+   if (! glareas[0]) return;
+   mesh_for_pandda_inspect_hud_buttons.setup_vertices_and_triangles_for_button();
+   unsigned int n_buttons_max = 10;
+   mesh_for_pandda_inspect_hud_buttons.setup_instancing_buffer(n_buttons_max, sizeof(HUD_button_info_t));
+}
+
+void
+graphics_info_t::show_pandda_inspect_hud_buttons() {
+
+   if (! glareas[0]) return;
+   GtkGLArea *gl_area = GTK_GL_AREA(glareas[0]);
+   GtkAllocation allocation;
+   gtk_widget_get_allocation(GTK_WIDGET(gl_area), &allocation);
+   int w = allocation.width;
+   int h = allocation.height;
+   float ww = static_cast<float>(w);
+   float wh = static_cast<float>(h);
+
+   const float left_margin_px   = 90.0f;
+   const float bottom_margin_px = 90.0f;
+   float adjusted_width  = HUD_button_info_t::button_width  * 900.0f / ww;
+   float adjusted_height = HUD_button_info_t::button_height * 900.0f / wh;
+   float x_left = -1.0f + left_margin_px / ww;
+
+   std::vector<std::string> labels = {
+      "Prev Site", "Next Site", "Prev Event", "Next Event", "Next Unviewed", "Close"
+   };
+
+   pandda_inspect_hud_button_info.clear();
+   for (unsigned int i = 0; i < labels.size(); i++) {
+      HUD_button_info_t button(labels[i]);
+      float y = (-1.0f + bottom_margin_px / wh) + 1.3f * adjusted_height * static_cast<float>(i);
+      button.set_position_offset(i, glm::vec2(x_left, y));
+      button.scale_x = adjusted_width;
+      button.scale_y = adjusted_height;
+      pandda_inspect_hud_button_info.push_back(button);
+   }
+
+   pandda_inspect_hud_is_active = true;
+   gtk_gl_area_attach_buffers(gl_area);
+   mesh_for_pandda_inspect_hud_buttons.update_instancing_buffer_data(pandda_inspect_hud_button_info);
+}
+
+void
+graphics_info_t::hide_pandda_inspect_hud_buttons() {
+
+   if (! glareas[0]) return;
+   pandda_inspect_hud_is_active = false;
+   pandda_inspect_hud_button_info.clear();
+   attach_buffers();
+   mesh_for_pandda_inspect_hud_buttons.update_instancing_buffer_data(pandda_inspect_hud_button_info);
+}
+
+void
+graphics_info_t::setup_pandda_inspect_hud_stats_bars() {
+
+   if (! glareas[0]) return;
+   mesh_for_pandda_inspect_hud_stats_bars.setup_camera_facing_quad_for_bar();
+   unsigned int n_bars_max = 10;
+   mesh_for_pandda_inspect_hud_stats_bars.setup_instancing_buffer(n_bars_max, sizeof(HUD_bar_attribs_t));
+}
+
+void
+graphics_info_t::update_pandda_inspect_hud_stats_bars(float bdc, float rfree,
+                                                       float resolution, float zpeak,
+                                                       float map_sigma) {
+   if (! glareas[0]) return;
+   GtkGLArea *gl_area = GTK_GL_AREA(glareas[0]);
+   GtkAllocation allocation;
+   gtk_widget_get_allocation(GTK_WIDGET(gl_area), &allocation);
+   int w = allocation.width;
+   int h = allocation.height;
+   float ww = static_cast<float>(w);
+   float wh = static_cast<float>(h);
+
+   // bars are horizontal, at the top of the screen, centre-aligned
+   // each bar: y from top_y to top_y - bar_height, x from -max_width*0.5 to max_width*0.5 centred at 0
+   // position_offset is the bottom-left corner of each bar
+
+   const float bar_height_px   = 16.0f;
+   const float bar_gap_px      = 4.0f;
+   const float top_margin_px   = 40.0f;
+   const float max_bar_width   = 0.18f; // NDC fraction of half-screen
+   const float bar_centre_x    = 0.0f;  // screen centre
+
+   // spacing in NDC
+   float bar_height_ndc = bar_height_px * 2.0f / wh;
+   float bar_gap_ndc    = bar_gap_px    * 2.0f / wh;
+   float top_ndc        = 1.0f - (top_margin_px * 2.0f / wh);
+
+   // bar value → width: normalise to [0, max_bar_width]
+   // BDC in [0,1]: higher=more background, colour blue
+   // Rfree in [0,1]: lower is better, colour green→red
+   // Resolution in [1,3] Å: lower is better; normalise to [0,1] as (3-res)/2
+   // Zpeak in [0,8]: higher is better, colour green
+   // Map sigma in [0,1]: lower=better, colour orange
+
+   struct stat_def { float value; float norm; glm::vec4 colour; };
+   float res_norm = (resolution > 0.0f) ? std::min(1.0f, std::max(0.0f, (3.0f - resolution) / 2.0f)) : 0.5f;
+   float rfree_norm = std::min(1.0f, std::max(0.0f, 1.0f - rfree * 3.0f)); // 0=good(green), >0.33=bad
+   float bdc_norm   = std::min(1.0f, std::max(0.0f, bdc));
+   float zpeak_norm = std::min(1.0f, std::max(0.0f, zpeak / 8.0f));
+   float msig_norm  = std::min(1.0f, std::max(0.0f, 1.0f - map_sigma));
+
+   std::vector<std::pair<float, glm::vec4>> bars = {
+      { bdc_norm,   glm::vec4(0.4f, 0.5f, 0.8f, 0.7f) },  // BDC: blue
+      { rfree_norm, glm::vec4(0.4f, 0.7f, 0.4f, 0.7f) },  // Rfree: green
+      { res_norm,   glm::vec4(0.7f, 0.7f, 0.3f, 0.7f) },  // Resolution: yellow
+      { zpeak_norm, glm::vec4(0.3f, 0.7f, 0.5f, 0.7f) },  // Z-peak: teal
+      { msig_norm,  glm::vec4(0.7f, 0.5f, 0.2f, 0.7f) },  // Map sigma: orange
+   };
+
+   pandda_inspect_hud_stats_bars.clear();
+   for (unsigned int i = 0; i < bars.size(); i++) {
+      float v     = bars[i].first;
+      glm::vec4 c = bars[i].second;
+      float bar_w  = max_bar_width * v;
+      float bar_x  = bar_centre_x - max_bar_width * 0.5f; // left-align within centred region
+      float bar_y  = top_ndc - static_cast<float>(i) * (bar_height_ndc + bar_gap_ndc) - bar_height_ndc;
+      // background bar (grey, full width)
+      HUD_bar_attribs_t bg(glm::vec4(0.25f, 0.25f, 0.25f, 0.5f), glm::vec2(bar_x, bar_y), max_bar_width, bar_height_ndc);
+      pandda_inspect_hud_stats_bars.push_back(bg);
+      // foreground bar (coloured, value width)
+      if (bar_w > 0.001f) {
+         HUD_bar_attribs_t fg(c, glm::vec2(bar_x, bar_y), bar_w, bar_height_ndc);
+         pandda_inspect_hud_stats_bars.push_back(fg);
+      }
+   }
+
+   gtk_gl_area_attach_buffers(gl_area);
+   mesh_for_pandda_inspect_hud_stats_bars.update_instancing_buffer_data(pandda_inspect_hud_stats_bars);
+}
+
+void
+graphics_info_t::draw_pandda_inspect_hud_stats_bars() {
+
+   if (pandda_inspect_hud_stats_bars.empty()) return;
+
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   mesh_for_pandda_inspect_hud_stats_bars.set_window_resize_scales_correction(glm::vec2(1.0f, 1.0f));
+   mesh_for_pandda_inspect_hud_stats_bars.set_window_resize_position_correction(glm::vec2(0.0f, 0.0f));
+   mesh_for_pandda_inspect_hud_stats_bars.draw(&shader_for_hud_geometry_bars);
+
+   // draw stat name labels above each bar using tooltip text shader
+   if (! glareas[0]) return;
+   GtkGLArea *gl_area = GTK_GL_AREA(glareas[0]);
+   GtkAllocation allocation;
+   gtk_widget_get_allocation(GTK_WIDGET(gl_area), &allocation);
+   int w = allocation.width;
+   int h = allocation.height;
+   float aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
+   float height_adjust = static_cast<float>(900) / static_cast<float>(h);
+   float wh = static_cast<float>(h);
+
+   const float bar_height_px = 16.0f;
+   const float bar_gap_px    = 4.0f;
+   const float top_margin_px = 40.0f;
+   const float max_bar_width = 0.18f;
+   float bar_height_ndc = bar_height_px * 2.0f / wh;
+   float bar_gap_ndc    = bar_gap_px    * 2.0f / wh;
+   float top_ndc        = 1.0f - (top_margin_px * 2.0f / wh);
+   float bar_x          = -max_bar_width * 0.5f;
+
+   static const std::vector<std::string> names = { "BDC", "Rfree", "Res", "Zpeak", "Msig" };
+   Shader &shader = shader_for_hud_geometry_tooltip_text;
+   shader.Use();
+   glm::vec4 text_colour(0.9f, 0.9f, 0.9f, 1.0f);
+   float width_adjust = static_cast<float>(900) / static_cast<float>(w);
+   for (unsigned int i = 0; i < names.size(); i++) {
+      const std::string &label = names[i];
+      HUDTextureMesh htm("pandda-stat-label-" + label);
+      htm.setup_quad();
+      float text_scale_raw = 0.4f * 0.00018f * 1.2f;
+      float text_scale = text_scale_raw * height_adjust;
+      glm::vec2 label_scale(text_scale / aspect_ratio, text_scale);
+      htm.set_scales(label_scale);
+      float n_chars = static_cast<float>(label.size());
+      float tl_adjust = -(n_chars - 1.0f) * text_scale_raw * 2.2f * 50.0f * width_adjust;
+      float bar_y = top_ndc - static_cast<float>(i) * (bar_height_ndc + bar_gap_ndc) - bar_height_ndc;
+      glm::vec2 pos(bar_x + tl_adjust, bar_y + bar_height_ndc * 0.2f);
+      htm.set_position(pos);
+      htm.draw_label(label, text_colour, &shader, ft_characters);
+   }
+}
+
+void
+graphics_info_t::draw_pandda_inspect_hud_buttons() {
+
+   if (pandda_inspect_hud_button_info.empty()) return;
+
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+   GtkGLArea *gl_area = GTK_GL_AREA(glareas[0]);
+   GtkAllocation allocation;
+   gtk_widget_get_allocation(GTK_WIDGET(gl_area), &allocation);
+   int w = allocation.width;
+   int h = allocation.height;
+   float aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
+   float height_adjust = static_cast<float>(900) / static_cast<float>(h);
+   float button_width_ndc  = HUD_button_info_t::button_width  * 900.0f / static_cast<float>(w);
+   float button_height_ndc = HUD_button_info_t::button_height * 900.0f / static_cast<float>(h);
+
+   mesh_for_pandda_inspect_hud_buttons.set_window_resize_scales_correction(glm::vec2(1.0f, 1.0f));
+   mesh_for_pandda_inspect_hud_buttons.set_window_resize_position_correction(glm::vec2(0.0f, 0.0f));
+   mesh_for_pandda_inspect_hud_buttons.draw(&shader_for_hud_buttons);
+
+   glm::vec4 text_colour_white(0.95f, 0.95f, 0.95f, 1.0f);
+   Shader &shader = shader_for_hud_geometry_tooltip_text;
+   shader.Use();
+   for (const auto &button : pandda_inspect_hud_button_info) {
+      const std::string &label = button.button_label;
+      if (!label.empty()) {
+         HUDTextureMesh htm("pandda-hud-btn-" + label);
+         htm.setup_quad();
+         float text_scale_raw = 0.4f * 0.00018f * 1.2f;
+         float text_scale = text_scale_raw * height_adjust;
+         glm::vec2 label_scale(text_scale / aspect_ratio, text_scale);
+         htm.set_scales(label_scale);
+         unsigned int n_chars = label.size();
+         float width_adjust = static_cast<float>(900) / static_cast<float>(w);
+         float tl_adjust = -static_cast<float>(n_chars - 1) * text_scale_raw * 2.2f * 50.0f * width_adjust;
+         glm::vec2 pos = button.position_offset;
+         pos += glm::vec2(0.0f, 0.3f * button_height_ndc);
+         pos += glm::vec2(0.5f * button_width_ndc, 0.0f);
+         pos += glm::vec2(tl_adjust, 0.0f);
+         htm.set_position(pos);
+         htm.draw_label(label, text_colour_white, &shader, ft_characters);
+      }
+   }
+}
+
 float
 graphics_info_t::hud_geometry_distortion_to_bar_size_nbc(float distortion) {
    return distortion * 0.002;
@@ -4478,6 +4717,10 @@ graphics_info_t::draw_hud_elements() {
    draw_hud_ramachandran_plot();
 
    draw_hud_buttons();
+
+   draw_pandda_inspect_hud_buttons();
+
+   draw_pandda_inspect_hud_stats_bars();
 
    draw_hud_fps();
 

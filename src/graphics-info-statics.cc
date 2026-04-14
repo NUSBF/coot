@@ -1727,6 +1727,11 @@ bool graphics_info_t::draw_stick_mode_atoms_default = true;
 
 std::vector<HUD_button_info_t> graphics_info_t::hud_button_info;
 HUDMesh graphics_info_t::mesh_for_hud_buttons = HUDMesh("mesh-for-hud-buttons");
+std::vector<HUD_button_info_t> graphics_info_t::pandda_inspect_hud_button_info;
+HUDMesh graphics_info_t::mesh_for_pandda_inspect_hud_buttons = HUDMesh("mesh-for-pandda-inspect-hud-buttons");
+bool graphics_info_t::pandda_inspect_hud_is_active = false;
+std::vector<HUD_bar_attribs_t> graphics_info_t::pandda_inspect_hud_stats_bars;
+HUDMesh graphics_info_t::mesh_for_pandda_inspect_hud_stats_bars = HUDMesh("mesh-for-pandda-inspect-hud-stats-bars");
 
 std::string graphics_info_t::label_for_hud_geometry_tooltip;
 
