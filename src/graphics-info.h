@@ -4052,7 +4052,17 @@ string   static std::string sessionid;
    static void add_to_rotation_centre(const glm::vec3 &offset);
 
    // static bool using_trackpad;
-   static bool use_primary_mouse_for_view_rotation_flag;
+
+   // Configurable mouse gesture bindings (indices into UI dropdown lists)
+   static int hid_left_drag_action;
+   static int hid_ctrl_left_drag_action;
+   static int hid_middle_drag_action;
+   static int hid_ctrl_middle_drag_action;
+   static int hid_right_drag_action;
+   static int hid_ctrl_right_drag_action;
+   static int hid_scroll_action;
+   static int hid_ctrl_scroll_action;
+
    static double mouse_x;
    static double mouse_y;
    static double drag_begin_x; // gtk pixels
@@ -4415,6 +4425,21 @@ string   static std::string sessionid;
    void setup_hud_buttons();
    static HUDMesh mesh_for_hud_buttons;
    static std::vector<HUD_button_info_t> hud_button_info;
+
+   void setup_pandda_inspect_hud_buttons();
+   void show_pandda_inspect_hud_buttons();
+   void hide_pandda_inspect_hud_buttons();
+   static void draw_pandda_inspect_hud_buttons();
+   static HUDMesh mesh_for_pandda_inspect_hud_buttons;
+   static std::vector<HUD_button_info_t> pandda_inspect_hud_button_info;
+   static bool pandda_inspect_hud_is_active;
+
+   // pandda inspect stats bars (top of screen)
+   void setup_pandda_inspect_hud_stats_bars();
+   void update_pandda_inspect_hud_stats_bars(float bdc, float rfree, float resolution, float zpeak, float map_sigma);
+   static void draw_pandda_inspect_hud_stats_bars();
+   static HUDMesh mesh_for_pandda_inspect_hud_stats_bars;
+   static std::vector<HUD_bar_attribs_t> pandda_inspect_hud_stats_bars;
 
 
    void show_test_buttons(); // testing function

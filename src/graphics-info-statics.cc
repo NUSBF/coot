@@ -72,7 +72,24 @@ bool graphics_info_t::prefer_python = 1; // Default: yes in Windows
 bool graphics_info_t::graphics_is_gl_es = false;
 
 // bool graphics_info_t::using_trackpad = false;
-bool graphics_info_t::use_primary_mouse_for_view_rotation_flag = false;
+
+// Configurable mouse gesture bindings (Coot 0.9 defaults)
+// Left drag:        0 = Rotate view
+// Ctrl+Left drag:   1 = Translate view
+// Middle drag:      0 = Translate view
+// Ctrl+Middle drag: 0 = Translate view
+// Right drag:       0 = Zoom
+// Ctrl+Right drag:  0 = Z-shift
+// Scroll:           0 = Contour level
+// Ctrl+Scroll:      0 = Zoom
+int graphics_info_t::hid_left_drag_action        = 0;
+int graphics_info_t::hid_ctrl_left_drag_action   = 1;
+int graphics_info_t::hid_middle_drag_action      = 0;
+int graphics_info_t::hid_ctrl_middle_drag_action = 0;
+int graphics_info_t::hid_right_drag_action       = 0;
+int graphics_info_t::hid_ctrl_right_drag_action  = 0;
+int graphics_info_t::hid_scroll_action           = 0;
+int graphics_info_t::hid_ctrl_scroll_action      = 0;
 
 bool graphics_info_t::use_gemmi = false;
 short int graphics_info_t::python_at_prompt_flag = 0;
@@ -1727,6 +1744,11 @@ bool graphics_info_t::draw_stick_mode_atoms_default = true;
 
 std::vector<HUD_button_info_t> graphics_info_t::hud_button_info;
 HUDMesh graphics_info_t::mesh_for_hud_buttons = HUDMesh("mesh-for-hud-buttons");
+std::vector<HUD_button_info_t> graphics_info_t::pandda_inspect_hud_button_info;
+HUDMesh graphics_info_t::mesh_for_pandda_inspect_hud_buttons = HUDMesh("mesh-for-pandda-inspect-hud-buttons");
+bool graphics_info_t::pandda_inspect_hud_is_active = false;
+std::vector<HUD_bar_attribs_t> graphics_info_t::pandda_inspect_hud_stats_bars;
+HUDMesh graphics_info_t::mesh_for_pandda_inspect_hud_stats_bars = HUDMesh("mesh-for-pandda-inspect-hud-stats-bars");
 
 std::string graphics_info_t::label_for_hud_geometry_tooltip;
 

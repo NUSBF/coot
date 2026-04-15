@@ -42,14 +42,6 @@ void unfullscreen() {
 
 }
 
-void set_use_trackpad(short int state) {
-   set_use_primary_mouse_button_for_view_rotation(state);
-}
-
-//! this is an alias for the above (at the moment).
-void set_use_primary_mouse_button_for_view_rotation(short int state) {
-   graphics_info_t::use_primary_mouse_for_view_rotation_flag = state;
-}
 
 
 // maybe this function should have its own file?
@@ -119,3 +111,7 @@ void clear_non_drawn_bonds(int imol) {
     g.graphics_draw();
 }
 
+
+// No-op stubs kept for SWIG/script compatibility
+void set_use_trackpad(short int /*state*/) {}
+void set_use_primary_mouse_button_for_view_rotation(short int /*state*/) {}

@@ -415,7 +415,8 @@ MacCoot_LDADD =  \
 	$(CLIPPER_LIBS) $(CURL_LIBS) $(GUILE_LDFLAGS) $(GTK_LIBS) $(EPOXY_LIBS) $(VTE_LIBS) $(EMBEDDED_PYTHON_LIBS)
 else
 coot_1_LDADD =  \
-	libcootsumo.la                                     \
+	libcootsumo.la \
+	$(top_builddir)/ligand/libcoot-ligand.la                                     \
 	$(top_builddir)/pli/libcoot-pli.la                 \
 	$(top_builddir)/density-contour/libcoot-isosurface.la  	\
 	$(top_builddir)/layla/libcoot-layla.la             \
@@ -942,7 +943,8 @@ libcootsumo_la_LIBADD = $(OPENMP_CFLAGS) \
 		$(VORBISFILE_LIBS)      \
 		$(GTK_LIBS)             \
 		$(CLIPPER_LIBS) 	\
-		$(LIBSSM_LIBS)		\
+		$(LIBSSM_LIBS) \
+	$(top_builddir)/ligand/libcoot-ligand.la		\
 		$(CCP4SRS_LIBS) 	\
 		$(MMDB_LIBS)		\
 		$(MOLTRIANGLES_LIBS)	\

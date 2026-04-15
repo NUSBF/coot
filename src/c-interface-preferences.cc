@@ -75,7 +75,199 @@
 extern logging logger;
 
 #include "widget-from-builder.hh"
+#include <cairo.h>
+#include <cmath>
 
+// ---------------------------------------------------------------------------
+// Mouse schematic Cairo renderer
+// ---------------------------------------------------------------------------
+
+static void ms_hex(cairo_t *cr, unsigned int hex, double alpha = 1.0) {
+   double r = ((hex >> 16) & 0xFF) / 255.0;
+   double g = ((hex >>  8) & 0xFF) / 255.0;
+   double b = ( hex        & 0xFF) / 255.0;
+   if (alpha < 1.0) cairo_set_source_rgba(cr, r, g, b, alpha);
+   else             cairo_set_source_rgb (cr, r, g, b);
+}
+
+static void ms_body_path(cairo_t *cr) {
+   cairo_move_to   (cr, 120,   4);
+   cairo_curve_to  (cr,  60,   4,   0,  40,   0, 100);
+   cairo_line_to   (cr,   0, 265);
+   cairo_curve_to  (cr,   0, 320,  55, 344, 120, 344);
+   cairo_curve_to  (cr, 185, 344, 240, 320, 240, 265);
+   cairo_line_to   (cr, 240, 100);
+   cairo_curve_to  (cr, 240,  40, 180,   4, 120,   4);
+   cairo_close_path(cr);
+}
+
+static void ms_rounded_rect(cairo_t *cr, double x, double y, double w, double h, double r) {
+   cairo_new_path(cr);
+   cairo_arc(cr, x + r,     y + r,     r, M_PI,      -M_PI / 2);
+   cairo_arc(cr, x + w - r, y + r,     r, -M_PI / 2,  0);
+   cairo_arc(cr, x + w - r, y + h - r, r,  0,          M_PI / 2);
+   cairo_arc(cr, x + r,     y + h - r, r,  M_PI / 2,   M_PI);
+   cairo_close_path(cr);
+}
+
+static void draw_mouse_schematic(GtkDrawingArea *, cairo_t *cr, int, int, gpointer) {
+
+   // Step 1: body silhouette
+   ms_body_path(cr);
+   ms_hex(cr, 0xf0f0ee);
+   cairo_fill_preserve(cr);
+   ms_hex(cr, 0xaaaaaa);
+   cairo_set_line_width(cr, 1.5);
+   cairo_stroke(cr);
+
+   // Step 2: left button zone — blue fill + 45° hatch
+   cairo_save(cr);
+   ms_body_path(cr);
+   cairo_clip(cr);
+
+   cairo_move_to   (cr, 120,   4);
+   cairo_curve_to  (cr,  60,   4,   0,  40,   0, 100);
+   cairo_line_to   (cr,   0, 148);
+   cairo_line_to   (cr, 120, 148);
+   cairo_close_path(cr);
+   ms_hex(cr, 0xB5D4F4, 0.55);
+   cairo_fill(cr);
+
+   cairo_save(cr);
+   cairo_move_to   (cr, 120,   4);
+   cairo_curve_to  (cr,  60,   4,   0,  40,   0, 100);
+   cairo_line_to   (cr,   0, 148);
+   cairo_line_to   (cr, 120, 148);
+   cairo_close_path(cr);
+   cairo_clip(cr);
+   ms_hex(cr, 0x185FA5);
+   cairo_set_line_width(cr, 0.8);
+   for (int i = -150; i < 280; i += 8) {
+      cairo_move_to(cr, i,       0);
+      cairo_line_to(cr, i + 160, 160);
+   }
+   cairo_stroke(cr);
+   cairo_restore(cr);
+   cairo_restore(cr);
+
+   // Step 3: right button zone — green fill + horizontal hatch
+   cairo_save(cr);
+   ms_body_path(cr);
+   cairo_clip(cr);
+
+   cairo_move_to   (cr, 120,   4);
+   cairo_curve_to  (cr, 180,   4, 240,  40, 240, 100);
+   cairo_line_to   (cr, 240, 148);
+   cairo_line_to   (cr, 120, 148);
+   cairo_close_path(cr);
+   ms_hex(cr, 0x9FE1CB, 0.55);
+   cairo_fill(cr);
+
+   cairo_save(cr);
+   cairo_move_to   (cr, 120,   4);
+   cairo_curve_to  (cr, 180,   4, 240,  40, 240, 100);
+   cairo_line_to   (cr, 240, 148);
+   cairo_line_to   (cr, 120, 148);
+   cairo_close_path(cr);
+   cairo_clip(cr);
+   ms_hex(cr, 0x0F6E56);
+   cairo_set_line_width(cr, 0.8);
+   for (int y = 4; y < 150; y += 8) {
+      cairo_move_to(cr, 120, y);
+      cairo_line_to(cr, 240, y);
+   }
+   cairo_stroke(cr);
+   cairo_restore(cr);
+   cairo_restore(cr);
+
+   // Step 4: scroll wheel — pill shape
+   ms_rounded_rect(cr, 103, 26, 22, 68, 11);
+   cairo_set_source_rgb(cr, 1, 1, 1);
+   cairo_fill_preserve(cr);
+   ms_hex(cr, 0xbbbbbb);
+   cairo_set_line_width(cr, 1.0);
+   cairo_stroke(cr);
+
+   // ridge lines
+   ms_hex(cr, 0x999999);
+   cairo_set_line_width(cr, 1.0);
+   for (int ry : {50, 58, 66}) {
+      cairo_move_to(cr, 107, ry);
+      cairo_line_to(cr, 121, ry);
+   }
+   cairo_stroke(cr);
+
+   // middle-click zone with cross-hatch
+   cairo_rectangle(cr, 103, 52, 22, 18);
+   ms_hex(cr, 0xFAEEDA, 0.9);
+   cairo_fill_preserve(cr);
+   ms_hex(cr, 0xEF9F27);
+   cairo_set_line_width(cr, 1.0);
+   cairo_stroke(cr);
+
+   cairo_save(cr);
+   cairo_rectangle(cr, 103, 52, 22, 18);
+   cairo_clip(cr);
+   ms_hex(cr, 0xEF9F27);
+   cairo_set_line_width(cr, 0.7);
+   for (int i = -18; i <= 40; i += 6) {
+      cairo_move_to(cr, 103 + i,      52);
+      cairo_line_to(cr, 103 + i + 18, 70);
+      cairo_move_to(cr, 103 + i + 18, 52);
+      cairo_line_to(cr, 103 + i,      70);
+   }
+   cairo_stroke(cr);
+   cairo_restore(cr);
+
+   // Step 5: B4 thumb — pink, reverse 45° hatch
+   cairo_rectangle(cr, 1, 178, 14, 34);
+   ms_hex(cr, 0xF4C0D1);
+   cairo_fill_preserve(cr);
+   ms_hex(cr, 0x993556);
+   cairo_set_line_width(cr, 1.0);
+   cairo_stroke(cr);
+
+   cairo_save(cr);
+   cairo_rectangle(cr, 1, 178, 14, 34);
+   cairo_clip(cr);
+   ms_hex(cr, 0x993556);
+   cairo_set_line_width(cr, 0.7);
+   for (int i = -34; i <= 48; i += 8) {
+      cairo_move_to(cr, 15 - i,      178);
+      cairo_line_to(cr, 15 - i - 34, 212);
+   }
+   cairo_stroke(cr);
+   cairo_restore(cr);
+
+   // B5 thumb — purple, vertical lines
+   cairo_rectangle(cr, 1, 218, 14, 34);
+   ms_hex(cr, 0xCECBF6);
+   cairo_fill_preserve(cr);
+   ms_hex(cr, 0x534AB7);
+   cairo_set_line_width(cr, 1.0);
+   cairo_stroke(cr);
+
+   cairo_save(cr);
+   cairo_rectangle(cr, 1, 218, 14, 34);
+   cairo_clip(cr);
+   ms_hex(cr, 0x534AB7);
+   cairo_set_line_width(cr, 0.7);
+   for (double vx = 1; vx <= 15; vx += 8) {
+      cairo_move_to(cr, vx, 218);
+      cairo_line_to(cr, vx, 252);
+   }
+   cairo_stroke(cr);
+   cairo_restore(cr);
+
+   // Divider lines
+   ms_hex(cr, 0xaaaaaa);
+   cairo_set_line_width(cr, 1.0);
+   cairo_move_to(cr, 120,   4);
+   cairo_line_to(cr, 120, 148);
+   cairo_move_to(cr,   0, 148);
+   cairo_line_to(cr, 240, 148);
+   cairo_stroke(cr);
+}
 
 void preferences() {
 
@@ -98,6 +290,10 @@ void show_preferences() {
    // we don't want to see the non-General tabs when we first start
    GtkWidget *togglebutton = widget_from_preferences_builder("preferences_general_radiotoolbutton");
    show_hide_preferences_tabs(GTK_TOGGLE_BUTTON(togglebutton), COOT_GENERAL_PREFERENCES);
+
+   GtkWidget *mouse_da = widget_from_preferences_builder("mouse_schematic_drawing_area");
+   if (mouse_da)
+      gtk_drawing_area_set_draw_func(GTK_DRAWING_AREA(mouse_da), draw_mouse_schematic, nullptr, nullptr);
 
    set_transient_for_main_window(w);
    gtk_widget_set_visible(w, TRUE);
@@ -225,14 +421,6 @@ void update_preference_gui() {
      std::cout << "--------------------------- update_preference_gui() preferences internal size "
                << g.preferences_internal.size() << std::endl;
 
-  // this might be done wrongly
-  if (graphics_info_t::use_primary_mouse_for_view_rotation_flag) {
-     GtkWidget *button = widget_from_preferences_builder("preferences_view_rotation_left_mouse_checkbutton");
-     gtk_check_button_set_active(GTK_CHECK_BUTTON(button), TRUE);
-  } else {
-     GtkWidget *button = widget_from_preferences_builder("preferences_view_rotation_left_mouse_checkbutton");
-     gtk_check_button_set_active(GTK_CHECK_BUTTON(button), FALSE);
-  }
 
   for (unsigned int i=0; i<g.preferences_internal.size(); i++) {
      auto preference_type = g.preferences_internal[i].preference_type;
@@ -263,14 +451,6 @@ void update_preference_gui() {
         }
         break;
 
-     case PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON:
-        w = widget_from_preferences_builder("preferences_view_rotation_left_mouse_checkbutton");
-        ivalue = g.preferences_internal[i].ivalue1;
-        if (ivalue == 1)
-           gtk_check_button_set_active(GTK_CHECK_BUTTON(w), TRUE);
-        else
-           gtk_check_button_set_active(GTK_CHECK_BUTTON(w), FALSE);
-        break;
 
      case PREFERENCES_RECENTRE_PDB:
         w = widget_from_preferences_builder("preferences_recentre_pdb_on_radiobutton");
@@ -562,6 +742,47 @@ void update_preference_gui() {
            if (state)
               gtk_check_button_set_active(GTK_CHECK_BUTTON(w), TRUE);
         }
+        break;
+
+     case PREFERENCES_HID_LEFT_DRAG:
+        w = widget_from_preferences_builder("hid_left_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_LEFT_DRAG:
+        w = widget_from_preferences_builder("hid_ctrl_left_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_MIDDLE_DRAG:
+        w = widget_from_preferences_builder("hid_middle_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_MIDDLE_DRAG:
+        w = widget_from_preferences_builder("hid_ctrl_middle_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_RIGHT_DRAG:
+        w = widget_from_preferences_builder("hid_right_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_RIGHT_DRAG:
+        w = widget_from_preferences_builder("hid_ctrl_right_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_SCROLL:
+        w = widget_from_preferences_builder("hid_scroll_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_SCROLL:
+        w = widget_from_preferences_builder("hid_ctrl_scroll_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
      }
   }
 }

@@ -2233,8 +2233,6 @@ void unfullscreen();
 
 //! Use left-mouse for view rotation
 void set_use_trackpad(short int state);
-
-//! this is an alias for the above
 void set_use_primary_mouse_button_for_view_rotation(short int state);
 
 

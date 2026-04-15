@@ -46,7 +46,7 @@
 #include "read-phs.h"
 #include "gtk-manual.h"
 #include "c-interface-refine.h"
-#include "cc-interface.hh" // 20250310-PE for set_use_primary_mouse_button_for_view_rotation()
+#include "cc-interface.hh"
 #include "utils/coot-utils.hh"
 
 #include "graphics-info.h" // for grab focus
@@ -144,27 +144,12 @@ extern "C" G_MODULE_EXPORT
 gboolean
 on_preferences_close_request(GtkWidget       *dialog,
                              gpointer         user_data) {
+   save_preferences();
    gtk_widget_set_visible(dialog, FALSE);
+   clear_preferences();
    graphics_info_t g;
    g.graphics_grab_focus();
    return TRUE; // has been handled - no need to find another handler.
-}
-
-void set_use_trackpad(short int state); // or #include cc-interface.hh
-
-extern "C" G_MODULE_EXPORT
-void
-on_preferences_view_rotation_left_mouse_checkbutton_toggled(GtkCheckButton *checkbutton,
-                                                            gpointer         user_data) {
-   if (gtk_check_button_get_active(checkbutton)) {
-      preferences_internal_change_value_int(PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON, 1);
-      // set_use_trackpad(1);
-      set_use_primary_mouse_button_for_view_rotation(1);
-   } else {
-      preferences_internal_change_value_int(PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON, 0);
-      // set_use_trackpad(0);
-      set_use_primary_mouse_button_for_view_rotation(0);
-   }
 }
 
 extern "C" G_MODULE_EXPORT
@@ -1186,4 +1171,80 @@ on_noughties_physics_checkbutton_toggled(GtkCheckButton *toggletoolbutton,
       set_refine_use_noughties_physics(1);
    else
       set_refine_use_noughties_physics(0);
+}
+
+// -------------------------------------------------------------------------
+// HID configurable mouse gesture binding handlers
+// -------------------------------------------------------------------------
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_left_drag_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_left_drag_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_LEFT_DRAG, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_ctrl_left_drag_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_ctrl_left_drag_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_LEFT_DRAG, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_middle_drag_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_middle_drag_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_MIDDLE_DRAG, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_ctrl_middle_drag_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_ctrl_middle_drag_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_MIDDLE_DRAG, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_right_drag_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_right_drag_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_RIGHT_DRAG, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_ctrl_right_drag_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_ctrl_right_drag_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_RIGHT_DRAG, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_scroll_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_scroll_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_SCROLL, v);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_ctrl_scroll_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *, gpointer) {
+   int v = (int) gtk_drop_down_get_selected(dropdown);
+   graphics_info_t::hid_ctrl_scroll_action = v;
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_SCROLL, v);
 }

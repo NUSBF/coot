@@ -2697,16 +2697,7 @@ void add_ligand_module_action(GSimpleAction *simple_action,
    // Show Chemical Features
    // Quick Ligand Validate
 
-   GtkWidget *toolbar_hbox = widget_from_builder("main_window_toolbar_hbox");
-   GtkWidget *menubutton = gtk_menu_button_new();
-   gtk_menu_button_set_label(GTK_MENU_BUTTON(menubutton), "Ligand");
-   gtk_box_append(GTK_BOX(toolbar_hbox), menubutton);
-
-   GtkWidget *menu = widget_from_builder("ligand-menu");
-   GMenuModel *model = G_MENU_MODEL(menu);
-   GtkWidget *popover = gtk_popover_menu_new_from_model(model);
-   gtk_menu_button_set_popover(GTK_MENU_BUTTON(menubutton), popover);
-
+   // Ligand entries are now in Extensions > Ligand in the menubar - no toolbar button needed
    g_simple_action_set_enabled(simple_action,FALSE);
    graphics_info_t::graphics_grab_focus();
 }
@@ -2728,6 +2719,36 @@ void add_rcrane_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    info_dialog("INFO:: No RCrane interface yet");
 }
 
+// Helper: wrap a toolbar menubutton in [menubutton ×] where × is a sibling button outside
+// the GtkMenuButton, so it never triggers the popover. Wrapper is what gets appended/removed.
+static void add_close_to_toolbar_menubutton(GtkWidget *toolbar_hbox,
+                                             GtkWidget *menubutton,
+                                             GSimpleAction *action) {
+   GtkWidget *wrapper   = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+   GtkWidget *close_btn = gtk_button_new_with_label("×");
+   gtk_widget_add_css_class(close_btn, "flat");
+   gtk_widget_set_tooltip_text(close_btn, "Remove from toolbar");
+   gtk_widget_set_valign(close_btn, GTK_ALIGN_CENTER);
+
+   gtk_box_append(GTK_BOX(wrapper), menubutton);
+   gtk_box_append(GTK_BOX(wrapper), close_btn);
+
+   struct CloseData { GtkWidget *wrapper; GSimpleAction *action; };
+   auto *cd = new CloseData{wrapper, action};
+
+   auto close_clicked = +[] (GtkButton *, gpointer data) {
+      auto *cd = static_cast<CloseData *>(data);
+      GtkWidget *parent = gtk_widget_get_parent(cd->wrapper);
+      if (parent) gtk_box_remove(GTK_BOX(parent), cd->wrapper);
+      g_simple_action_set_enabled(cd->action, TRUE);
+      delete cd;
+   };
+   g_signal_connect(G_OBJECT(close_btn), "clicked", G_CALLBACK(close_clicked), cd);
+
+   gtk_box_append(GTK_BOX(toolbar_hbox), wrapper);
+   g_simple_action_set_enabled(action, FALSE);
+}
+
 void add_restraints_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
                                   G_GNUC_UNUSED GVariant *parameter,
                                   G_GNUC_UNUSED gpointer user_data) {
@@ -2739,14 +2760,13 @@ void add_restraints_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    GtkWidget *toolbar_hbox = widget_from_builder("main_window_toolbar_hbox");
    GtkWidget *menubutton = gtk_menu_button_new();
    gtk_menu_button_set_label(GTK_MENU_BUTTON(menubutton), "Restraints");
-   gtk_box_append(GTK_BOX(toolbar_hbox), menubutton);
 
    GtkWidget *menu = widget_from_builder("restraints-menu");
    GMenuModel *model = G_MENU_MODEL(menu);
    GtkWidget *popover = gtk_popover_menu_new_from_model(model);
    gtk_menu_button_set_popover(GTK_MENU_BUTTON(menubutton), popover);
 
-   g_simple_action_set_enabled(simple_action,FALSE);
+   add_close_to_toolbar_menubutton(toolbar_hbox, menubutton, simple_action);
    graphics_info_t::graphics_grab_focus();
 }
 
@@ -2770,7 +2790,6 @@ void add_refine_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
       GtkWidget *toolbar_hbox = widget_from_builder("main_window_toolbar_hbox");
       GtkWidget *menubutton = gtk_menu_button_new();
       gtk_menu_button_set_label(GTK_MENU_BUTTON(menubutton), "Refine");
-      gtk_box_append(GTK_BOX(toolbar_hbox), menubutton);
 
       // because we use a grid for the widgets, we can't/don't use the popover menu
 
@@ -2869,9 +2888,10 @@ void add_refine_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
       gtk_widget_set_margin_start(box, 6);
       gtk_widget_set_margin_end(box, 6);
       gtk_widget_set_size_request(popover, 310, 150);
+
+      add_close_to_toolbar_menubutton(toolbar_hbox, menubutton, simple_action);
    }
 
-   g_simple_action_set_enabled(simple_action, FALSE);
    graphics_info_t::graphics_grab_focus();
 }
 
@@ -2959,7 +2979,7 @@ void add_views_module_action(G_GNUC_UNUSED GSimpleAction *simple_action,
    gtk_box_append(GTK_BOX(outer_box), content_box);
    gtk_box_append(GTK_BOX(outer_box), views_hbox);
 
-   gtk_box_append(GTK_BOX(toolbar_hbox), view_menubutton);
+   add_close_to_toolbar_menubutton(toolbar_hbox, view_menubutton, simple_action);
 
 }
 
@@ -3889,6 +3909,14 @@ void superpose_ligands_action(G_GNUC_UNUSED GSimpleAction *simple_action,
 
    safe_python_command("import coot_gui");
    safe_python_command("coot_gui.superpose_ligand_gui()");
+}
+
+void pandda(); // defined in pandda-inspect.cc
+
+void pandda2_inspect_action(G_GNUC_UNUSED GSimpleAction *simple_action,
+                            G_GNUC_UNUSED GVariant *parameter,
+                            G_GNUC_UNUSED gpointer user_data) {
+   pandda();
 }
 
 void split_water_action(G_GNUC_UNUSED GSimpleAction *simple_action,
@@ -5035,17 +5063,7 @@ refine_range(G_GNUC_UNUSED GSimpleAction *simple_action,
              G_GNUC_UNUSED GVariant *parameter,
              G_GNUC_UNUSED gpointer user_data) {
 
-   graphics_info_t g;
-   std::cout << "in refine_range with in_range_define " << g.in_range_define << std::endl;
-   if (g.in_range_define == 2) {
-      // so what were the two atoms?
-
-      refine_with_range_picked_atoms();
-
-   } else {
-      std::string m = "Use the Range button to define a residue range (pick 2 atoms)";
-      g.add_status_bar_text(m);
-   }
+   do_refine(1);
 }
 
 
@@ -6175,6 +6193,7 @@ create_actions(GtkApplication *application) {
    add_action(  "rigid_body_fit_residue_ranges_action",   rigid_body_fit_residue_ranges_action);
    add_action(        "rigid_body_fit_molecule_action",         rigid_body_fit_molecule_action);
    add_action(              "superpose_ligands_action",               superpose_ligands_action);
+   add_action(             "pandda2_inspect_action",                  pandda2_inspect_action);
    add_action(                    "split_water_action",                     split_water_action);
    add_action("symm_shift_reference_chain_here_action", symm_shift_reference_chain_here_action);
    add_action(          "other_modelling_tools_action",           other_modelling_tools_action);

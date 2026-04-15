@@ -126,10 +126,6 @@ graphics_info_t::save_preference_file(const std::string &filename, short int il)
                                           g.preferences_internal[i].ivalue1, il));
          break;
 
-      case PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON:
-         commands.push_back(state_command("coot", "set-use-primary-mouse-button-for-view-rotation",
-                                          g.preferences_internal[i].ivalue1, il));
-         break;
 
       case PREFERENCES_RECENTRE_PDB:
          commands.push_back(state_command("coot", "set-recentre-on-read-pdb",
@@ -343,10 +339,6 @@ graphics_info_t::make_preferences_internal() {
   p.ivalue1 = on;
   ret.push_back(p);
 
-  // left mouse for rotation
-  p.preference_type = PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON;
-  p.ivalue1 = 0;
-  ret.push_back(p);
 
   // recentre pdb
   on = recentre_on_read_pdb;
@@ -574,6 +566,38 @@ graphics_info_t::make_preferences_internal() {
   p.fvalue1 = fvalue;
   ret.push_back(p);
 
+  // HID configurable mouse gesture bindings
+  p.preference_type = PREFERENCES_HID_LEFT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_left_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_LEFT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_ctrl_left_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_MIDDLE_DRAG;
+  p.ivalue1 = graphics_info_t::hid_middle_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_MIDDLE_DRAG;
+  p.ivalue1 = graphics_info_t::hid_ctrl_middle_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_RIGHT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_right_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_RIGHT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_ctrl_right_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_SCROLL;
+  p.ivalue1 = graphics_info_t::hid_scroll_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_SCROLL;
+  p.ivalue1 = graphics_info_t::hid_ctrl_scroll_action;
+  ret.push_back(p);
 
   graphics_info_t::preferences_internal = ret;
 

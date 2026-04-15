@@ -15,8 +15,8 @@
   </object>
   <object class="GtkDialog" id="preferences_dialog">
     <property name="title" translatable="yes">Coot: Preferences</property>
-    <property name="default-width">820</property>
-    <property name="default-height">480</property>
+    <property name="default-width">1640</property>
+    <property name="default-height">960</property>
     <signal name="close-request" handler="on_preferences_close_request" swapped="no"/>
     <child>
       <object class="GtkBox" id="dialog-vbox77">
@@ -217,75 +217,314 @@
                       <object class="GtkFrame" id="preferences_hid">
                         <property name="visible">1</property>
                         <property name="child">
-                          <object class="GtkBox" id="vbox238">
+                          <object class="GtkBox">
                             <property name="orientation">vertical</property>
+                            <property name="spacing">12</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">8</property>
+                            <property name="margin-top">8</property>
+                            <property name="margin-bottom">8</property>
+
+                            <!-- Mouse diagram with surrounding dropdowns -->
                             <child>
-                              <object class="GtkLabel">
-                                <property name="valign">center</property>
-                                <property name="visible">1</property>
-                                <property name="label" translatable="yes">Mouse button for View Rotation</property>
-                                <property name="justify">center</property>
-                                <property name="margin-top">6</property>
-                                <property name="margin-bottom">6</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkBox" id="vbox_for_view_rotation_mouse_button">
-                                <property name="orientation">vertical</property>
+                              <object class="GtkBox">
+                                <property name="orientation">horizontal</property>
+                                <property name="spacing">6</property>
+                                <property name="halign">center</property>
+
+                                <!-- Left column: Left click / Left drag / Ctrl+Left drag -->
                                 <child>
-                                  <object class="GtkCheckButton" id="preferences_view_rotation_left_mouse_checkbutton">
-                                    <property name="label" translatable="yes">Left (Primary)</property>
-                                    <property name="active">1</property>
-                                    <signal name="toggled" handler="on_preferences_view_rotation_left_mouse_checkbutton_toggled" swapped="no"/>
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">4</property>
+                                    <property name="valign">start</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">2</property>
+                                        <child>
+                                          <object class="GtkLabel"><property name="label" translatable="yes">Left click</property><property name="halign">start</property></object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="hid_left_click_dropdown">
+                                            <property name="model"><object class="GtkStringList"><items>
+                                              <item translatable="yes">Select atom</item>
+                                              <item translatable="yes">Label atom</item>
+                                            </items></object></property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">2</property>
+                                        <child>
+                                          <object class="GtkLabel"><property name="label" translatable="yes">Left drag</property><property name="halign">start</property></object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="hid_left_drag_dropdown">
+                                            <property name="model"><object class="GtkStringList"><items>
+                                              <item translatable="yes">Rotate view</item>
+                                              <item translatable="yes">Translate view</item>
+                                            </items></object></property>
+                                            <signal name="notify::selected" handler="on_hid_left_drag_dropdown_notify_selected" swapped="no"/>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">2</property>
+                                        <child>
+                                          <object class="GtkLabel"><property name="label" translatable="yes">Ctrl+Left drag</property><property name="halign">start</property></object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="hid_ctrl_left_drag_dropdown">
+                                            <property name="model"><object class="GtkStringList"><items>
+                                              <item translatable="yes">Rotate view</item>
+                                              <item translatable="yes">Translate view</item>
+                                              <item translatable="yes">Z-shift</item>
+                                            </items></object></property>
+                                            <signal name="notify::selected" handler="on_hid_ctrl_left_drag_dropdown_notify_selected" swapped="no"/>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
                                   </object>
                                 </child>
+
+                                <!-- Centre: mouse drawing + middle/scroll below -->
                                 <child>
-                                  <object class="GtkCheckButton" id="preferences_view_rotation_right_mouse_checkbutton">
-                                    <property name="label" translatable="yes">Right (Secondary)</property>
-                                    <property name="group">preferences_view_rotation_left_mouse_checkbutton</property>
-                                    <property name="active">1</property>
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">6</property>
+                                    <child>
+                                      <object class="GtkDrawingArea" id="mouse_schematic_drawing_area">
+                                        <property name="content-width">240</property>
+                                        <property name="content-height">344</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">16</property>
+                                        <property name="halign">center</property>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">2</property>
+                                            <child>
+                                              <object class="GtkLabel"><property name="label" translatable="yes">Middle click</property><property name="halign">start</property></object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDropDown" id="hid_middle_click_dropdown">
+                                                <property name="model"><object class="GtkStringList"><items>
+                                                  <item translatable="yes">Centre on atom</item>
+                                                </items></object></property>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">2</property>
+                                            <child>
+                                              <object class="GtkLabel"><property name="label" translatable="yes">Middle drag</property><property name="halign">start</property></object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDropDown" id="hid_middle_drag_dropdown">
+                                                <property name="model"><object class="GtkStringList"><items>
+                                                  <item translatable="yes">Translate view</item>
+                                                  <item translatable="yes">Rotate view</item>
+                                                  <item translatable="yes">Z-shift</item>
+                                                </items></object></property>
+                                                <signal name="notify::selected" handler="on_hid_middle_drag_dropdown_notify_selected" swapped="no"/>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">2</property>
+                                            <child>
+                                              <object class="GtkLabel"><property name="label" translatable="yes">Ctrl+Middle drag</property><property name="halign">start</property></object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDropDown" id="hid_ctrl_middle_drag_dropdown">
+                                                <property name="model"><object class="GtkStringList"><items>
+                                                  <item translatable="yes">Translate view</item>
+                                                  <item translatable="yes">Z-shift</item>
+                                                  <item translatable="yes">Rotate view</item>
+                                                </items></object></property>
+                                                <signal name="notify::selected" handler="on_hid_ctrl_middle_drag_dropdown_notify_selected" swapped="no"/>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">16</property>
+                                        <property name="halign">center</property>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">2</property>
+                                            <child>
+                                              <object class="GtkLabel"><property name="label" translatable="yes">Scroll wheel</property><property name="halign">start</property></object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDropDown" id="hid_scroll_dropdown">
+                                                <property name="model"><object class="GtkStringList"><items>
+                                                  <item translatable="yes">Contour level</item>
+                                                </items></object></property>
+                                                <signal name="notify::selected" handler="on_hid_scroll_dropdown_notify_selected" swapped="no"/>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">2</property>
+                                            <child>
+                                              <object class="GtkLabel"><property name="label" translatable="yes">Ctrl+Scroll</property><property name="halign">start</property></object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkDropDown" id="hid_ctrl_scroll_dropdown">
+                                                <property name="model"><object class="GtkStringList"><items>
+                                                  <item translatable="yes">Zoom</item>
+                                                  <item translatable="yes">Contour level</item>
+                                                  <item translatable="yes">Z-shift</item>
+                                                </items></object></property>
+                                                <signal name="notify::selected" handler="on_hid_ctrl_scroll_dropdown_notify_selected" swapped="no"/>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+
+                                <!-- Right column: Right click / Right drag / Ctrl+Right drag -->
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">4</property>
+                                    <property name="valign">start</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">2</property>
+                                        <child>
+                                          <object class="GtkLabel"><property name="label" translatable="yes">Right click</property><property name="halign">start</property></object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="hid_right_click_dropdown">
+                                            <property name="model"><object class="GtkStringList"><items>
+                                              <item translatable="yes">Context menu</item>
+                                            </items></object></property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">2</property>
+                                        <child>
+                                          <object class="GtkLabel"><property name="label" translatable="yes">Right drag</property><property name="halign">start</property></object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="hid_right_drag_dropdown">
+                                            <property name="model"><object class="GtkStringList"><items>
+                                              <item translatable="yes">Zoom</item>
+                                              <item translatable="yes">Translate view</item>
+                                              <item translatable="yes">Rotate view</item>
+                                            </items></object></property>
+                                            <signal name="notify::selected" handler="on_hid_right_drag_dropdown_notify_selected" swapped="no"/>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">2</property>
+                                        <child>
+                                          <object class="GtkLabel"><property name="label" translatable="yes">Ctrl+Right drag</property><property name="halign">start</property></object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkDropDown" id="hid_ctrl_right_drag_dropdown">
+                                            <property name="model"><object class="GtkStringList"><items>
+                                              <item translatable="yes">Z-shift</item>
+                                              <item translatable="yes">Rotate view</item>
+                                              <item translatable="yes">Translate view</item>
+                                              <item translatable="yes">Zoom</item>
+                                            </items></object></property>
+                                            <signal name="notify::selected" handler="on_hid_ctrl_right_drag_dropdown_notify_selected" swapped="no"/>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
                                   </object>
                                 </child>
 
                               </object>
                             </child>
+
+                            <!-- Original controls unchanged -->
                             <child>
-                              <object class="GtkLabel" id="label563">
-                                <property name="valign">center</property>
-                                <property name="visible">1</property>
-                                <property name="label" translatable="yes">Virtual trackball</property>
-                                <property name="justify">center</property>
-                                <property name="margin-top">6</property>
-                                <property name="margin-bottom">6</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkFrame" id="frame233">
-                                <property name="visible">1</property>
-                                <property name="child">
-                                  <object class="GtkBox" id="vbox239">
-                                    <property name="orientation">vertical</property>
-                                    <child>
-                                      <object class="GtkCheckButton" id="preferences_hid_spherical_radiobutton">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Spherical Surface</property>
-                                        <property name="use-underline">1</property>
-                                        <signal name="toggled" handler="on_preferences_hid_spherical_radiobutton_toggled" swapped="no"/>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkCheckButton" id="preferences_hid_flat_radiobutton">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Turntable Mode (Flat)</property>
-                                        <property name="use-underline">1</property>
-                                        <property name="group">preferences_hid_spherical_radiobutton</property>
-                                        <signal name="toggled" handler="on_preferences_hid_flat_radiobutton_toggled" swapped="no"/>
-                                      </object>
-                                    </child>
+                              <object class="GtkBox" id="vbox238">
+                                <property name="orientation">vertical</property>
+                                <property name="valign">start</property>
+                                <child>
+                                  <object class="GtkLabel" id="label563">
+                                    <property name="valign">center</property>
+                                    <property name="visible">1</property>
+                                    <property name="label" translatable="yes">Virtual trackball</property>
+                                    <property name="justify">center</property>
+                                    <property name="margin-top">6</property>
+                                    <property name="margin-bottom">6</property>
                                   </object>
-                                </property>
+                                </child>
+                                <child>
+                                  <object class="GtkFrame" id="frame233">
+                                    <property name="visible">1</property>
+                                    <property name="child">
+                                      <object class="GtkBox" id="vbox239">
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <object class="GtkCheckButton" id="preferences_hid_spherical_radiobutton">
+                                            <property name="valign">center</property>
+                                            <property name="label" translatable="yes">Spherical Surface</property>
+                                            <property name="use-underline">1</property>
+                                            <signal name="toggled" handler="on_preferences_hid_spherical_radiobutton_toggled" swapped="no"/>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkCheckButton" id="preferences_hid_flat_radiobutton">
+                                            <property name="valign">center</property>
+                                            <property name="label" translatable="yes">Turntable Mode (Flat)</property>
+                                            <property name="use-underline">1</property>
+                                            <property name="group">preferences_hid_spherical_radiobutton</property>
+                                            <signal name="toggled" handler="on_preferences_hid_flat_radiobutton_toggled" swapped="no"/>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </child>
                               </object>
                             </child>
+
                           </object>
                         </property>
                       </object>
