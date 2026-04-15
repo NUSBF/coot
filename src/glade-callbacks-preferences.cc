@@ -1248,3 +1248,92 @@ on_hid_ctrl_scroll_dropdown_notify_selected(GtkDropDown *dropdown, GParamSpec *,
    graphics_info_t g;
    g.preferences_internal_change_value(PREFERENCES_HID_CTRL_SCROLL, v);
 }
+
+// -------------------------------------------------------------------------
+// Helper: apply a preset and update all HID dropdowns
+// -------------------------------------------------------------------------
+
+static void apply_hid_preset(int left_drag, int ctrl_left, int middle_drag, int ctrl_middle,
+                              int right_drag, int ctrl_right, int scroll, int ctrl_scroll) {
+   graphics_info_t::hid_left_drag_action        = left_drag;
+   graphics_info_t::hid_ctrl_left_drag_action   = ctrl_left;
+   graphics_info_t::hid_middle_drag_action      = middle_drag;
+   graphics_info_t::hid_ctrl_middle_drag_action = ctrl_middle;
+   graphics_info_t::hid_right_drag_action       = right_drag;
+   graphics_info_t::hid_ctrl_right_drag_action  = ctrl_right;
+   graphics_info_t::hid_scroll_action           = scroll;
+   graphics_info_t::hid_ctrl_scroll_action      = ctrl_scroll;
+
+   graphics_info_t g;
+   g.preferences_internal_change_value(PREFERENCES_HID_LEFT_DRAG,         left_drag);
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_LEFT_DRAG,    ctrl_left);
+   g.preferences_internal_change_value(PREFERENCES_HID_MIDDLE_DRAG,       middle_drag);
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_MIDDLE_DRAG,  ctrl_middle);
+   g.preferences_internal_change_value(PREFERENCES_HID_RIGHT_DRAG,        right_drag);
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_RIGHT_DRAG,   ctrl_right);
+   g.preferences_internal_change_value(PREFERENCES_HID_SCROLL,            scroll);
+   g.preferences_internal_change_value(PREFERENCES_HID_CTRL_SCROLL,       ctrl_scroll);
+
+   // Update all dropdown widgets to reflect the new values
+   GtkWidget *w;
+   w = widget_from_preferences_builder("hid_left_drag_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), left_drag);
+   w = widget_from_preferences_builder("hid_ctrl_left_drag_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), ctrl_left);
+   w = widget_from_preferences_builder("hid_middle_drag_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), middle_drag);
+   w = widget_from_preferences_builder("hid_ctrl_middle_drag_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), ctrl_middle);
+   w = widget_from_preferences_builder("hid_right_drag_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), right_drag);
+   w = widget_from_preferences_builder("hid_ctrl_right_drag_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), ctrl_right);
+   w = widget_from_preferences_builder("hid_scroll_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), scroll);
+   w = widget_from_preferences_builder("hid_ctrl_scroll_dropdown");
+   if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), ctrl_scroll);
+}
+
+// -------------------------------------------------------------------------
+// Preset handlers
+// -------------------------------------------------------------------------
+
+// Dropdown index reference:
+// left_drag:     0=Rotate, 1=Translate
+// ctrl_left:     0=Rotate, 1=Translate, 2=Z-shift
+// middle_drag:   0=Translate, 1=Rotate, 2=Z-shift
+// ctrl_middle:   0=Translate, 1=Z-shift, 2=Rotate
+// right_drag:    0=Zoom, 1=Translate, 2=Rotate
+// ctrl_right:    0=Z-shift, 1=Rotate, 2=Translate, 3=Zoom
+// scroll:        0=Contour level, 1=Zoom
+// ctrl_scroll:   0=Zoom, 1=Contour level, 2=Z-shift
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_preset_coot09_toggled(GtkCheckButton *btn, gpointer) {
+   if (!gtk_check_button_get_active(btn)) return;
+   // Left: Rotate, Ctrl+Left: Translate, Right: Zoom, Ctrl+Right: Z-shift,
+   // Middle: Translate, Scroll: Contour level, Ctrl+Scroll: Zoom
+   apply_hid_preset(/*left*/0, /*ctrl_left*/1, /*mid*/0, /*ctrl_mid*/0,
+                    /*right*/0, /*ctrl_right*/0, /*scroll*/0, /*ctrl_scroll*/0);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_preset_pymol_toggled(GtkCheckButton *btn, gpointer) {
+   if (!gtk_check_button_get_active(btn)) return;
+   // Left: Rotate, Ctrl+Left: Translate, Right: Zoom,
+   // Middle: Translate, Scroll: Zoom, Ctrl+Scroll: Contour level
+   apply_hid_preset(/*left*/0, /*ctrl_left*/1, /*mid*/0, /*ctrl_mid*/0,
+                    /*right*/0, /*ctrl_right*/0, /*scroll*/1, /*ctrl_scroll*/1);
+}
+
+extern "C" G_MODULE_EXPORT
+void
+on_hid_preset_chimerax_toggled(GtkCheckButton *btn, gpointer) {
+   if (!gtk_check_button_get_active(btn)) return;
+   // Left: Rotate, Ctrl+Left: Rotate (ChimeraX uses rotate about Z, approx. as Rotate),
+   // Middle: Translate, Right: Zoom, Scroll: Zoom, Ctrl+Scroll: Contour level
+   apply_hid_preset(/*left*/0, /*ctrl_left*/0, /*mid*/0, /*ctrl_mid*/0,
+                    /*right*/0, /*ctrl_right*/0, /*scroll*/1, /*ctrl_scroll*/1);
+}

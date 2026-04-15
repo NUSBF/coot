@@ -1146,8 +1146,11 @@ graphics_info_t::on_glarea_scrolled(GtkEventControllerScroll *controller,
          handled = true;
       } else {
          // Plain scroll — dispatch on hid_scroll_action
-         // 0=Contour level (currently the only option)
+         // 0=Contour level, 1=Zoom
          switch (hid_scroll_action) {
+            case 1: // Zoom
+               do_mouse_zoom(dy);
+               break;
             default: // 0 = Contour level
                do_contour_level(dy);
                break;

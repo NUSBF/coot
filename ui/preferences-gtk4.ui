@@ -383,6 +383,7 @@
                                               <object class="GtkDropDown" id="hid_scroll_dropdown">
                                                 <property name="model"><object class="GtkStringList"><items>
                                                   <item translatable="yes">Contour level</item>
+                                                  <item translatable="yes">Zoom</item>
                                                 </items></object></property>
                                                 <signal name="notify::selected" handler="on_hid_scroll_dropdown_notify_selected" swapped="no"/>
                                               </object>
@@ -477,6 +478,100 @@
                                   </object>
                                 </child>
 
+                              </object>
+                            </child>
+
+                            <!-- Mouse binding presets -->
+                            <child>
+                              <object class="GtkFrame">
+                                <property name="label" translatable="yes">Mouse binding presets</property>
+                                <property name="margin-top">4</property>
+                                <property name="margin-bottom">4</property>
+                                <property name="child">
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">6</property>
+                                    <property name="margin-start">10</property>
+                                    <property name="margin-end">10</property>
+                                    <property name="margin-top">6</property>
+                                    <property name="margin-bottom">6</property>
+
+                                    <!-- Coot 0.9 preset -->
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">12</property>
+                                        <property name="valign">start</property>
+                                        <child>
+                                          <object class="GtkCheckButton" id="hid_preset_coot09_radiobutton">
+                                            <property name="label" translatable="yes">Coot 0.9</property>
+                                            <property name="valign">start</property>
+                                            <signal name="toggled" handler="on_hid_preset_coot09_toggled" swapped="no"/>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Left drag: Rotate  ·  Ctrl+Left drag: Translate  ·  Right drag: Zoom  ·  Ctrl+Right drag: Z-shift  ·  Shift+Right drag: Clipping (fixed)  ·  Middle drag: Translate  ·  Scroll: Contour level  ·  Ctrl+Scroll: Zoom</property>
+                                            <property name="halign">start</property>
+                                            <property name="wrap">1</property>
+                                            <property name="xalign">0</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+
+                                    <!-- PyMOL preset -->
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">12</property>
+                                        <property name="valign">start</property>
+                                        <child>
+                                          <object class="GtkCheckButton" id="hid_preset_pymol_radiobutton">
+                                            <property name="label" translatable="yes">PyMOL</property>
+                                            <property name="group">hid_preset_coot09_radiobutton</property>
+                                            <property name="valign">start</property>
+                                            <signal name="toggled" handler="on_hid_preset_pymol_toggled" swapped="no"/>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Left drag: Rotate  ·  Ctrl+Left drag: Translate  ·  Right drag: Zoom  ·  Shift+Right drag: Move clipping (fixed)  ·  Middle drag: Translate  ·  Ctrl+Shift+Middle click: Set origin (fixed)  ·  Scroll: Zoom  ·  Ctrl+Scroll: Contour level</property>
+                                            <property name="halign">start</property>
+                                            <property name="wrap">1</property>
+                                            <property name="xalign">0</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+
+                                    <!-- ChimeraX preset -->
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="orientation">horizontal</property>
+                                        <property name="spacing">12</property>
+                                        <property name="valign">start</property>
+                                        <child>
+                                          <object class="GtkCheckButton" id="hid_preset_chimerax_radiobutton">
+                                            <property name="label" translatable="yes">ChimeraX</property>
+                                            <property name="group">hid_preset_coot09_radiobutton</property>
+                                            <property name="valign">start</property>
+                                            <signal name="toggled" handler="on_hid_preset_chimerax_toggled" swapped="no"/>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="label" translatable="yes">Left drag: Rotate  ·  Ctrl+Left drag: Rotate  ·  Middle drag: Translate  ·  Right drag: Zoom  ·  Scroll: Zoom  ·  Ctrl+Scroll: Contour level  ·  Ctrl+Left click: Select (fixed)</property>
+                                            <property name="halign">start</property>
+                                            <property name="wrap">1</property>
+                                            <property name="xalign">0</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+
+                                  </object>
+                                </property>
                               </object>
                             </child>
 
