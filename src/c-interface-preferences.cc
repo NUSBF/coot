@@ -742,6 +742,47 @@ void update_preference_gui() {
            if (state)
               gtk_check_button_set_active(GTK_CHECK_BUTTON(w), TRUE);
         }
+        break;
+
+     case PREFERENCES_HID_LEFT_DRAG:
+        w = widget_from_preferences_builder("hid_left_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_LEFT_DRAG:
+        w = widget_from_preferences_builder("hid_ctrl_left_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_MIDDLE_DRAG:
+        w = widget_from_preferences_builder("hid_middle_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_MIDDLE_DRAG:
+        w = widget_from_preferences_builder("hid_ctrl_middle_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_RIGHT_DRAG:
+        w = widget_from_preferences_builder("hid_right_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_RIGHT_DRAG:
+        w = widget_from_preferences_builder("hid_ctrl_right_drag_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_SCROLL:
+        w = widget_from_preferences_builder("hid_scroll_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
+
+     case PREFERENCES_HID_CTRL_SCROLL:
+        w = widget_from_preferences_builder("hid_ctrl_scroll_dropdown");
+        if (w) gtk_drop_down_set_selected(GTK_DROP_DOWN(w), g.preferences_internal[i].ivalue1);
+        break;
      }
   }
 }

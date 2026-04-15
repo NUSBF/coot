@@ -4052,6 +4052,17 @@ string   static std::string sessionid;
    static void add_to_rotation_centre(const glm::vec3 &offset);
 
    // static bool using_trackpad;
+
+   // Configurable mouse gesture bindings (indices into UI dropdown lists)
+   static int hid_left_drag_action;
+   static int hid_ctrl_left_drag_action;
+   static int hid_middle_drag_action;
+   static int hid_ctrl_middle_drag_action;
+   static int hid_right_drag_action;
+   static int hid_ctrl_right_drag_action;
+   static int hid_scroll_action;
+   static int hid_ctrl_scroll_action;
+
    static double mouse_x;
    static double mouse_y;
    static double drag_begin_x; // gtk pixels

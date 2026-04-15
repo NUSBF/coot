@@ -79,6 +79,16 @@
                                                      //         1: yes
 #define PREFERENCES_PHYSICS                       45
 
+// HID configurable mouse gesture bindings
+#define PREFERENCES_HID_LEFT_DRAG         46
+#define PREFERENCES_HID_CTRL_LEFT_DRAG    47
+#define PREFERENCES_HID_MIDDLE_DRAG       48
+#define PREFERENCES_HID_CTRL_MIDDLE_DRAG  49
+#define PREFERENCES_HID_RIGHT_DRAG        50
+#define PREFERENCES_HID_CTRL_RIGHT_DRAG   51
+#define PREFERENCES_HID_SCROLL            52
+#define PREFERENCES_HID_CTRL_SCROLL       53
+
 #define MODEL_TOOLBAR                              0
 #define MAIN_TOOLBAR                               1
 

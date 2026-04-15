@@ -111,3 +111,7 @@ void clear_non_drawn_bonds(int imol) {
     g.graphics_draw();
 }
 
+
+// No-op stubs kept for SWIG/script compatibility
+void set_use_trackpad(short int /*state*/) {}
+void set_use_primary_mouse_button_for_view_rotation(short int /*state*/) {}

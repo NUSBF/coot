@@ -176,11 +176,6 @@ graphics_info_t::on_glarea_drag_update_primary(GtkGestureDrag *gesture,
 
    };
 
-   if (false)
-      std::cout << "debug:: use_primary_mouse_for_view_rotation_flag "
-                << use_primary_mouse_for_view_rotation_flag << std::endl;
-
-   // Ctrl left-mouse means pan
    GdkModifierType modifier = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
    bool control_is_pressed = (modifier & GDK_CONTROL_MASK);
    bool   shift_is_pressed = (modifier & GDK_SHIFT_MASK);
@@ -188,6 +183,20 @@ graphics_info_t::on_glarea_drag_update_primary(GtkGestureDrag *gesture,
    double y = drag_begin_y + drag_delta_y;
    double delta_delta_x = x - get_mouse_previous_position_x();
    double delta_delta_y = y - get_mouse_previous_position_y();
+
+   // Helper for Z-shift/clip (same logic as do_ztrans_and_clip from globjects.cc)
+   auto do_z_shift = [this, x, y] () {
+      double x_diff = x - GetMouseBeginX();
+      double y_diff = y - GetMouseBeginY();
+      coot::Cartesian v = screen_z_to_real_space_vector(glareas[0]);
+      double slab_change = -0.02 * x_diff;
+      double ztr_change  = 0.001 * y_diff;
+      v *= ztr_change;
+      if (fabs(x_diff) > fabs(y_diff))
+         adjust_clipping(slab_change);
+      else
+         add_vector_to_RotationCentre(v);
+   };
 
    bool handled = false;
 
@@ -226,37 +235,45 @@ graphics_info_t::on_glarea_drag_update_primary(GtkGestureDrag *gesture,
                move_atom_pull_target_position(x, y, control_is_pressed);
             }
             handled = true;
-         } else {
          }
       } else {
          if (control_is_pressed) {
-            do_drag_pan_gtk3(gl_area, drag_delta_x, drag_delta_y); // 20220613-PE no redraw here currently
-            // Update mouse_x/mouse_y so that if ctrl is released mid-drag,
-            // the next view rotation starts from the current position
-            // (not the stale position from when panning started).
-            mouse_x = drag_begin_x + drag_delta_x;
-            mouse_y = drag_begin_y + drag_delta_y;
+            // Ctrl+Left drag — dispatch on hid_ctrl_left_drag_action
+            // 0=Rotate, 1=Translate, 2=Z-shift
+            switch (hid_ctrl_left_drag_action) {
+               case 1: // Translate view
+                  do_drag_pan_gtk3(gl_area, drag_delta_x, drag_delta_y);
+                  mouse_x = drag_begin_x + drag_delta_x;
+                  mouse_y = drag_begin_y + drag_delta_y;
+                  break;
+               case 2: // Z-shift
+                  do_z_shift();
+                  break;
+               default: // 0 = Rotate view
+                  do_view_rotation(drag_delta_x, drag_delta_y);
+                  break;
+            }
             handled = true;
             graphics_draw();
+         } else if (shift_is_pressed) {
+            do_view_zoom(drag_delta_x, drag_delta_y);
          } else {
-            if (shift_is_pressed) {
-               do_view_zoom(drag_delta_x, drag_delta_y);
+            // Left drag — dispatch on hid_left_drag_action
+            // Chi rotation takes priority when active
+            if (edit_chi_current_chi >= 1) {
+               rotate_chi(delta_delta_x, delta_delta_y); // does its own graphics_draw()
             } else {
-               if (use_primary_mouse_for_view_rotation_flag) {
-                  if (edit_chi_current_chi >= 1) {
-                     rotate_chi(delta_delta_x, delta_delta_y); // does its own graphics_draw()
-                  } else {
-                     // view rotation is the last thing to test for/do
-                     // 2026-03-04-PE recall that drag_delta_x and drag_delta_y are passed variables
+               // 0=Rotate, 1=Translate
+               switch (hid_left_drag_action) {
+                  case 1: // Translate view
+                     do_drag_pan_gtk3(gl_area, drag_delta_x, drag_delta_y);
+                     mouse_x = drag_begin_x + drag_delta_x;
+                     mouse_y = drag_begin_y + drag_delta_y;
+                     break;
+                  default: // 0 = Rotate view
                      do_view_rotation(drag_delta_x, drag_delta_y);
                      graphics_draw();
-                  }
-               } else {
-                  // is this logic correct?
-                  if (edit_chi_current_chi >= 1) {
-                     // rotate_chi() needs moving atoms
-                     rotate_chi(delta_delta_x, delta_delta_y); // does its own graphics_draw()
-                  }
+                     break;
                }
             }
          }
@@ -317,10 +334,6 @@ graphics_info_t::on_glarea_drag_begin_secondary(G_GNUC_UNUSED GtkGestureDrag *ge
       check_if_in_range_defines(); // this does a pick and looks for distances and angle defines.
    }
 #endif
-   if (use_primary_mouse_for_view_rotation_flag) {
-      bool was_a_double_click = false; // maybe set this correctly?
-      bool handled = check_if_moving_atom_pull(was_a_double_click);
-   }
 
 }
 
@@ -360,14 +373,44 @@ graphics_info_t::on_glarea_drag_update_secondary(GtkGestureDrag *gesture,
                 << drag_delta_x << " " << drag_delta_y
                 << std::endl;
 
+   // Helper for Z-shift/clip
+   auto do_z_shift = [this, &x, &y] () {
+      double x_diff = x - GetMouseBeginX();
+      double y_diff = y - GetMouseBeginY();
+      coot::Cartesian v = screen_z_to_real_space_vector(glareas[0]);
+      double slab_change = -0.02 * x_diff;
+      double ztr_change  = 0.001 * y_diff;
+      v *= ztr_change;
+      if (fabs(x_diff) > fabs(y_diff))
+         adjust_clipping(slab_change);
+      else
+         add_vector_to_RotationCentre(v);
+   };
+
    if (shift_is_pressed) {
-      do_view_zoom(drag_delta_x, drag_delta_y);
+      // Shift+Right drag: hardcoded Z-shift/clip (Coot 0.9 behaviour)
+      do_z_shift();
    } else {
       if (control_is_pressed) {
-         do_drag_pan_gtk4(gl_area, drag_delta_x, drag_delta_y);
+         // Ctrl+Right drag — dispatch on hid_ctrl_right_drag_action
+         // 0=Z-shift, 1=Rotate, 2=Translate, 3=Zoom
+         switch (hid_ctrl_right_drag_action) {
+            case 1: // Rotate view
+               do_view_rotation(view_rotation_per_pixel_scale_factor * drag_delta_x,
+                                view_rotation_per_pixel_scale_factor * drag_delta_y);
+               break;
+            case 2: // Translate view
+               do_drag_pan_gtk4(gl_area, drag_delta_x, drag_delta_y);
+               break;
+            case 3: // Zoom
+               do_view_zoom(drag_delta_x, drag_delta_y);
+               break;
+            default: // 0 = Z-shift
+               do_z_shift();
+               break;
+         }
       } else {
-         // zoom with chording. Check both because currently
-         // APPLE has primary swapped.
+         // zoom with chording (keep for compatibility)
          bool do_chorded_view_zoom = false;
          if (modifier & GDK_BUTTON1_MASK)
             if (modifier & GDK_BUTTON3_MASK)
@@ -376,19 +419,19 @@ graphics_info_t::on_glarea_drag_update_secondary(GtkGestureDrag *gesture,
          if (do_chorded_view_zoom) {
             do_view_zoom(drag_delta_x, drag_delta_y);
          } else {
-
-            bool old_style_mouse = false;
-            if (use_primary_mouse_for_view_rotation_flag)
-               old_style_mouse = true;
-            bool handled = false;
-            if (old_style_mouse) {
-               do_view_zoom(drag_delta_x, drag_delta_y);
-               handled = true;
-            }
-
-            if (! handled) {
-               do_view_rotation(view_rotation_per_pixel_scale_factor * drag_delta_x,
-                                view_rotation_per_pixel_scale_factor * drag_delta_y);
+            // Right drag — dispatch on hid_right_drag_action
+            // 0=Zoom, 1=Translate, 2=Rotate
+            switch (hid_right_drag_action) {
+               case 1: // Translate view
+                  do_drag_pan_gtk4(gl_area, drag_delta_x, drag_delta_y);
+                  break;
+               case 2: // Rotate view
+                  do_view_rotation(view_rotation_per_pixel_scale_factor * drag_delta_x,
+                                   view_rotation_per_pixel_scale_factor * drag_delta_y);
+                  break;
+               default: // 0 = Zoom
+                  do_view_zoom(drag_delta_x, drag_delta_y);
+                  break;
             }
          }
       }
@@ -449,10 +492,64 @@ graphics_info_t::on_glarea_drag_update_middle(GtkGestureDrag *gesture,
                                               double drag_delta_x, double drag_delta_y,
                                               GtkWidget *gl_area) {
 
-   do_drag_pan_gtk3(gl_area, drag_delta_x, drag_delta_y); // 20220613-PE no redraw here currently
-   graphics_draw();
+   GdkModifierType modifier = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(gesture));
+   bool control_is_pressed = (modifier & GDK_CONTROL_MASK);
    double x = drag_begin_x + drag_delta_x;
    double y = drag_begin_y + drag_delta_y;
+
+   auto do_view_rotation_middle = [this, gl_area] (double ddx, double ddy) {
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(gl_area, &allocation);
+      int w = allocation.width;
+      int h = allocation.height;
+      update_view_quaternion(w, h, ddx, ddy);
+   };
+
+   auto do_z_shift_middle = [this, &x, &y] () {
+      double x_diff = x - GetMouseBeginX();
+      double y_diff = y - GetMouseBeginY();
+      coot::Cartesian v = screen_z_to_real_space_vector(glareas[0]);
+      double slab_change = -0.02 * x_diff;
+      double ztr_change  = 0.001 * y_diff;
+      v *= ztr_change;
+      if (fabs(x_diff) > fabs(y_diff))
+         adjust_clipping(slab_change);
+      else
+         add_vector_to_RotationCentre(v);
+   };
+
+   if (control_is_pressed) {
+      // Ctrl+Middle drag — dispatch on hid_ctrl_middle_drag_action
+      // 0=Translate, 1=Z-shift, 2=Rotate
+      switch (hid_ctrl_middle_drag_action) {
+         case 1: // Z-shift
+            do_z_shift_middle();
+            break;
+         case 2: // Rotate view
+            do_view_rotation_middle(drag_delta_x, drag_delta_y);
+            break;
+         default: // 0 = Translate view
+            do_drag_pan_gtk3(gl_area, drag_delta_x, drag_delta_y);
+            break;
+      }
+   } else {
+      // Middle drag — dispatch on hid_middle_drag_action
+      // 0=Translate, 1=Rotate, 2=Z-shift
+      switch (hid_middle_drag_action) {
+         case 1: // Rotate view
+            do_view_rotation_middle(drag_delta_x, drag_delta_y);
+            break;
+         case 2: // Z-shift
+            do_z_shift_middle();
+            break;
+         default: // 0 = Translate view
+            do_drag_pan_gtk3(gl_area, drag_delta_x, drag_delta_y);
+            break;
+      }
+   }
+
+   graphics_draw();
+   SetMouseBegin(x, y); // keep "previous position" updated for z-shift delta calculation
    set_mouse_previous_position(x, y);
    // std::cout << "drag update_middle: " << x << " " << y << std::endl;
 }
@@ -991,24 +1088,33 @@ graphics_info_t::on_glarea_scrolled(GtkEventControllerScroll *controller,
    auto do_mouse_zoom = [] (double dy) {
       int dir = 1;
       if (dy > 0) dir = -1;
-      // mouse_zoom(zz, 0.0); // 20250519-PE don't call mouse zoom - it uses drag argument
-      // call scroll_zoom
       scroll_zoom(dir);
    };
 
-   // std::cout << "debug:: on_glarea_scrolled() --- start --- dy: " << dy << std::endl;
+   auto do_contour_level = [this] (double dy) {
+      if (graphics_info_t::glareas.size() > 0)
+         g_idle_add(idle_contour_function, graphics_info_t::glareas[0]);
+      contour_level_scroll_scrollable_map(dy);
+   };
+
+   auto do_scroll_z_shift = [this] (double dy) {
+      // Translate view along screen Z axis
+      coot::Cartesian v = screen_z_to_real_space_vector(glareas[0]);
+      double step = dy * 0.5;
+      v *= step;
+      add_vector_to_RotationCentre(v);
+      graphics_draw();
+   };
 
    GdkModifierType modifier = gtk_event_controller_get_current_event_state(GTK_EVENT_CONTROLLER(controller));
    control_is_pressed = (modifier & GDK_CONTROL_MASK);
    shift_is_pressed = (modifier & GDK_SHIFT_MASK);
 
    bool handled = false;
-   if (true)
-      std::cout << "on_glarea_scrolled() control_is_pressed " << control_is_pressed
-                << " shift_is_pressed " << shift_is_pressed << std::endl;
 
    if (control_is_pressed) {
       if (shift_is_pressed) {
+         // Ctrl+Shift+Scroll: change model representation (hardcoded)
          if (dy > 0)
             change_model_molecule_representation_mode(-1);
          else
@@ -1016,42 +1122,36 @@ graphics_info_t::on_glarea_scrolled(GtkEventControllerScroll *controller,
          graphics_draw();
          handled = true;
       } else {
-
-         // 20250519-PE this is how it used to be! Seems esoteric - I am not
-         // sure what it actually does
-         if (true) {
-            // dy is either 1.0 or -1.0
-            // std::cout << "change the proportional editing " << dx << " " << dy << std::endl;
-            bool dir = false;
-            if (dy < 0.0) dir = true;
-            pull_restraint_neighbour_displacement_change_max_radius(dir);
-            graphics_draw();
-            handled = true;
+         // Ctrl+Scroll — dispatch on hid_ctrl_scroll_action
+         // 0=Zoom, 1=Contour level, 2=Z-shift
+         switch (hid_ctrl_scroll_action) {
+            case 1: // Contour level
+               do_contour_level(dy);
+               break;
+            case 2: // Z-shift
+               do_scroll_z_shift(dy);
+               break;
+            default: // 0 = Zoom
+               do_mouse_zoom(dy);
+               break;
          }
-
-         // ctrl-scroll zoom, same as shift-scroll zoom
-         if (! handled) {
-            do_mouse_zoom(dy);
-            handled = true;
-         }
+         handled = true;
       }
    }
 
    if (! handled) {
       if (shift_is_pressed) {
-
-            do_mouse_zoom(dy);
-            handled = true;
-
+         // Shift+Scroll: zoom (hardcoded)
+         do_mouse_zoom(dy);
+         handled = true;
       } else {
-         // scroll density
-
-         // start the idle function - why is this needed? The contouring used to
-         // work (i.e. the idle function was added somewhere (else)).
-         if (graphics_info_t::glareas.size() > 0) {
-            g_idle_add(idle_contour_function, graphics_info_t::glareas[0]);
+         // Plain scroll — dispatch on hid_scroll_action
+         // 0=Contour level (currently the only option)
+         switch (hid_scroll_action) {
+            default: // 0 = Contour level
+               do_contour_level(dy);
+               break;
          }
-         contour_level_scroll_scrollable_map(dy);
       }
    }
    // std::cout << "debug:: on_glarea_scrolled() done " << std::endl;

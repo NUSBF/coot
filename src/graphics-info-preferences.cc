@@ -566,6 +566,38 @@ graphics_info_t::make_preferences_internal() {
   p.fvalue1 = fvalue;
   ret.push_back(p);
 
+  // HID configurable mouse gesture bindings
+  p.preference_type = PREFERENCES_HID_LEFT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_left_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_LEFT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_ctrl_left_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_MIDDLE_DRAG;
+  p.ivalue1 = graphics_info_t::hid_middle_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_MIDDLE_DRAG;
+  p.ivalue1 = graphics_info_t::hid_ctrl_middle_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_RIGHT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_right_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_RIGHT_DRAG;
+  p.ivalue1 = graphics_info_t::hid_ctrl_right_drag_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_SCROLL;
+  p.ivalue1 = graphics_info_t::hid_scroll_action;
+  ret.push_back(p);
+
+  p.preference_type = PREFERENCES_HID_CTRL_SCROLL;
+  p.ivalue1 = graphics_info_t::hid_ctrl_scroll_action;
+  ret.push_back(p);
 
   graphics_info_t::preferences_internal = ret;
 

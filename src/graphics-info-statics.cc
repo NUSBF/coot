@@ -73,6 +73,24 @@ bool graphics_info_t::graphics_is_gl_es = false;
 
 // bool graphics_info_t::using_trackpad = false;
 
+// Configurable mouse gesture bindings (Coot 0.9 defaults)
+// Left drag:        0 = Rotate view
+// Ctrl+Left drag:   1 = Translate view
+// Middle drag:      0 = Translate view
+// Ctrl+Middle drag: 0 = Translate view
+// Right drag:       0 = Zoom
+// Ctrl+Right drag:  0 = Z-shift
+// Scroll:           0 = Contour level
+// Ctrl+Scroll:      0 = Zoom
+int graphics_info_t::hid_left_drag_action        = 0;
+int graphics_info_t::hid_ctrl_left_drag_action   = 1;
+int graphics_info_t::hid_middle_drag_action      = 0;
+int graphics_info_t::hid_ctrl_middle_drag_action = 0;
+int graphics_info_t::hid_right_drag_action       = 0;
+int graphics_info_t::hid_ctrl_right_drag_action  = 0;
+int graphics_info_t::hid_scroll_action           = 0;
+int graphics_info_t::hid_ctrl_scroll_action      = 0;
+
 bool graphics_info_t::use_gemmi = false;
 short int graphics_info_t::python_at_prompt_flag = 0;
 

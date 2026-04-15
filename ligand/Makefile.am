@@ -190,7 +190,8 @@ coot_identify_protein_bin_SOURCES = identify-protein.cc
 # Why do I need to add lidia-core here? It's already added to libcoot-coord-utils.
 coot_identify_protein_bin_LDADD = ./libcoot-ligand.la      \
 	$(top_builddir)/ideal/libcoot-ideal.la             \
-	$(top_builddir)/coot-utils/libcoot-coord-utils.la  \
+	$(top_builddir)/coot-utils/libcoot-coord-utils.la \
+	$(top_builddir)/coot-utils/libcoot-map-utils.la  \
         $(top_builddir)/lidia-core/libcoot-lidia-core.la   \
 	$(top_builddir)/mini-mol/libcoot-mini-mol.la       \
 	$(top_builddir)/geometry/libcoot-geometry.la       \
