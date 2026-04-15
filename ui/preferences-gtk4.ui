@@ -232,7 +232,7 @@
                                 <property name="spacing">6</property>
                                 <property name="halign">center</property>
 
-                                <!-- Left column: Left click / Left drag / Ctrl+Left drag / B4 / B5 -->
+                                <!-- Left column: Left click / Left drag / Ctrl+Left drag -->
                                 <child>
                                   <object class="GtkBox">
                                     <property name="orientation">vertical</property>
@@ -285,42 +285,6 @@
                                               <item translatable="yes">Rotate view</item>
                                               <item translatable="yes">Translate view</item>
                                               <item translatable="yes">Z-shift</item>
-                                            </items></object></property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkBox">
-                                        <property name="orientation">vertical</property>
-                                        <property name="spacing">2</property>
-                                        <property name="margin-top">6</property>
-                                        <child>
-                                          <object class="GtkLabel"><property name="label" translatable="yes">Button 4</property><property name="halign">start</property></object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="hid_button4_dropdown">
-                                            <property name="sensitive">0</property>
-                                            <property name="model"><object class="GtkStringList"><items>
-                                              <item translatable="yes">To be implemented</item>
-                                            </items></object></property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkBox">
-                                        <property name="orientation">vertical</property>
-                                        <property name="spacing">2</property>
-                                        <property name="margin-top">6</property>
-                                        <child>
-                                          <object class="GtkLabel"><property name="label" translatable="yes">Button 5</property><property name="halign">start</property></object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkDropDown" id="hid_button5_dropdown">
-                                            <property name="sensitive">0</property>
-                                            <property name="model"><object class="GtkStringList"><items>
-                                              <item translatable="yes">To be implemented</item>
                                             </items></object></property>
                                           </object>
                                         </child>
