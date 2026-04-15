@@ -7129,8 +7129,6 @@ on_first_startup_use_left_button_clicked(GtkButton       *button,
    GtkWidget *dialog = widget_from_builder("first-startup-dialog");
    gtk_widget_set_visible(dialog, FALSE);
 
-   preferences_internal_change_value_int(PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON, 1);
-   set_use_primary_mouse_button_for_view_rotation(1);
 }
 
 extern "C" G_MODULE_EXPORT
@@ -7141,8 +7139,6 @@ on_first_startup_use_right_button_clicked(GtkButton       *button,
    GtkWidget *dialog = widget_from_builder("first-startup-dialog");
    gtk_widget_set_visible(dialog, FALSE);
 
-   preferences_internal_change_value_int(PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON, 0);
-   set_use_primary_mouse_button_for_view_rotation(0);
 }
 
 extern "C" G_MODULE_EXPORT

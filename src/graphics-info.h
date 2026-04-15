@@ -4052,7 +4052,6 @@ string   static std::string sessionid;
    static void add_to_rotation_centre(const glm::vec3 &offset);
 
    // static bool using_trackpad;
-   static bool use_primary_mouse_for_view_rotation_flag;
    static double mouse_x;
    static double mouse_y;
    static double drag_begin_x; // gtk pixels

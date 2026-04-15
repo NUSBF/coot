@@ -154,20 +154,6 @@ on_preferences_close_request(GtkWidget       *dialog,
 
 void set_use_trackpad(short int state); // or #include cc-interface.hh
 
-extern "C" G_MODULE_EXPORT
-void
-on_preferences_view_rotation_left_mouse_checkbutton_toggled(GtkCheckButton *checkbutton,
-                                                            gpointer         user_data) {
-   if (gtk_check_button_get_active(checkbutton)) {
-      preferences_internal_change_value_int(PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON, 1);
-      // set_use_trackpad(1);
-      set_use_primary_mouse_button_for_view_rotation(1);
-   } else {
-      preferences_internal_change_value_int(PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON, 0);
-      // set_use_trackpad(0);
-      set_use_primary_mouse_button_for_view_rotation(0);
-   }
-}
 
 extern "C" G_MODULE_EXPORT
 void

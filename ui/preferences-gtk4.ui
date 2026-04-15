@@ -478,35 +478,6 @@
                                 <property name="orientation">vertical</property>
                                 <property name="valign">start</property>
                                 <child>
-                                  <object class="GtkLabel">
-                                    <property name="valign">center</property>
-                                    <property name="visible">1</property>
-                                    <property name="label" translatable="yes">Mouse button for View Rotation</property>
-                                    <property name="justify">center</property>
-                                    <property name="margin-top">6</property>
-                                    <property name="margin-bottom">6</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkBox" id="vbox_for_view_rotation_mouse_button">
-                                    <property name="orientation">vertical</property>
-                                    <child>
-                                      <object class="GtkCheckButton" id="preferences_view_rotation_left_mouse_checkbutton">
-                                        <property name="label" translatable="yes">Left (Primary)</property>
-                                        <property name="active">1</property>
-                                        <signal name="toggled" handler="on_preferences_view_rotation_left_mouse_checkbutton_toggled" swapped="no"/>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkCheckButton" id="preferences_view_rotation_right_mouse_checkbutton">
-                                        <property name="label" translatable="yes">Right (Secondary)</property>
-                                        <property name="group">preferences_view_rotation_left_mouse_checkbutton</property>
-                                        <property name="active">1</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
                                   <object class="GtkLabel" id="label563">
                                     <property name="valign">center</property>
                                     <property name="visible">1</property>

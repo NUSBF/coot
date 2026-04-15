@@ -77,7 +77,6 @@
 #define PREFERENCES_FONT_OWN_COLOUR_FLAG          42 // values -1: unset
                                                      //         0: no
                                                      //         1: yes
-#define PREFERENCES_VIEW_ROTATION_MOUSE_BUTTON    44
 #define PREFERENCES_PHYSICS                       45
 
 #define MODEL_TOOLBAR                              0
