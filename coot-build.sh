@@ -151,6 +151,9 @@ else
 
     make -j$(nproc) || handle_error "Build RDKit failed"
     make install || handle_error "Install RDKit failed"
+    # CoordGen's own headers are not installed by make install; copy them manually
+    # so that rdkit/GraphMol/CoordGen.h can find its relative includes.
+    cp -r ../External/CoordGen/coordgen "$RDKIT_DIR/include/rdkit/GraphMol/coordgen"
     cd ../..
 fi
 
