@@ -500,6 +500,18 @@ if [ "$LAST_BUILT_HASH" != "$NEW_COOT_HASH" ] && [ "$LAST_BUILT_HASH" != "none" 
             -delete 2>/dev/null || true
     done
 fi
+
+# Wipe all build-tree .la files and installed coot libs before make.
+# .la files embed dependency_libs paths (including RDKit dir) at link time.
+# Stale ones from a previous build carry old RDKit-2024 paths which cause
+# ABI mismatch when the linker picks up the installed libcoot-lidia-core.so.0.
+# Deleting .la files forces libtool to regenerate them cleanly; the heavy
+# .o/.lo compilation steps are skipped since those are still up-to-date.
+echo "Removing stale libtool archives and installed coot libraries..."
+find . -name "*.la" -not -path "./.git/*" -delete 2>/dev/null || true
+find . -path "*/.libs/libcoot-*.so*" -delete 2>/dev/null || true
+rm -f "$INSTALL_BASE/lib"/libcoot-*.so* "$INSTALL_BASE/lib"/libcoot-*.la 2>/dev/null || true
+
 MAKE_LOG="$(pwd)/../coot-make.log"
 echo "Make output logged to: $MAKE_LOG"
 make -j$MAX_JOBS 2>&1 | tee "$MAKE_LOG"
