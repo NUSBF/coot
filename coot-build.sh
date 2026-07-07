@@ -11,7 +11,8 @@ mkdir -p "$INSTALL_BASE" "$DEPS_DIR"
 
 # Define dependency installation paths - CORRECTED VERSIONS
 export BOOST_DIR="$DEPS_DIR/boost-1.87.0"
-export RDKIT_DIR="$DEPS_DIR/rdkit-2024.09.4"
+export RDKIT_DIR="$DEPS_DIR/rdkit-2025.09.6"
+RDKIT_TAG="Release_2025_09_6"
 export GTK4_DIR="$DEPS_DIR/gtk4-4.12.5"
 export MMDB2_DIR="$DEPS_DIR/mmdb2-2.0.22"  # This is correct
 export SSM_DIR="$DEPS_DIR/ssm-1.4"
@@ -116,14 +117,20 @@ else
 fi
 
 # Build RDKit
-if [ -d "rdkit/build" ] && [ -f "rdkit/build/CMakeCache.txt" ] && find "$RDKIT_DIR/lib" -maxdepth 1 -name "*.so" | grep -q .; then
+if find "$RDKIT_DIR/lib" -maxdepth 1 -name "*.so" 2>/dev/null | grep -q .; then
     echo "RDKit already built, skipping..."
 else
     echo "Building RDKit..."
     if [ ! -d "rdkit" ]; then
-        git clone -b Release_2024_09_4 https://github.com/rdkit/rdkit.git
+        git clone -b "$RDKIT_TAG" https://github.com/rdkit/rdkit.git
+    else
+        cd rdkit
+        git fetch origin
+        git checkout "$RDKIT_TAG"
+        cd ..
     fi
     cd rdkit
+    rm -rf build
     mkdir -p build
     cd build
 
@@ -137,27 +144,15 @@ else
         -DBoost_USE_STATIC_LIBS=OFF \
         -DBoost_USE_STATIC_RUNTIME=OFF \
         -DRDK_BUILD_CAIRO_SUPPORT=ON \
+        -DRDK_BUILD_COORDGEN_SUPPORT=ON \
         -DRDK_INSTALL_STATIC_LIBS=OFF \
+        -DRDK_INSTALL_INTREE=OFF \
         || handle_error "RDKit cmake failed"
 
     make -j$(nproc) || handle_error "Build RDKit failed"
     make install || handle_error "Install RDKit failed"
-
-    # Make sure all libraries are copied
-    mkdir -p "$RDKIT_DIR/lib"
-    echo "Copying RDKit libraries from build directory to $RDKIT_DIR/lib"
-    cp -v lib/*.so* "$RDKIT_DIR/lib/"
-    
-    # Update LD_LIBRARY_PATH to include the RDKit build directory
-    export LD_LIBRARY_PATH="$(pwd)/lib:$RDKIT_DIR/lib:$LD_LIBRARY_PATH"
-    
-    cd ..
-    find Code -mindepth 1 -maxdepth 1 -exec ln -s {} . \;
-    cd ..
+    cd ../..
 fi
-
-# Update CPPFLAGS to include RDKit paths
-export CPPFLAGS="-I$(pwd) -I$(pwd)/rdkit -I$(pwd)/rdkit/Code $CPPFLAGS"
 
 # Build MMDB2 FIRST (before SSM and Clipper which depend on it)
 if [ -d "$MMDB2_DIR/lib" ] && [ -f "$MMDB2_DIR/lib/libmmdb2.so" ]; then
@@ -452,7 +447,7 @@ echo "Building Coot..."
 ./autogen.sh || handle_error "autogen.sh failed"
 cp configure configure.orig
 export PKG_CONFIG_PATH="$(pwd)/../glib-2.82.2/install/lib/pkgconfig:$(pwd)/../pango-1.52.0/install/lib/x86_64-linux-gnu/pkgconfig:$(pwd)/../cairo-1.18.0/install/lib/x86_64-linux-gnu/pkgconfig:$(pwd)/../harfbuzz-8.4.0/install/lib/pkgconfig:$(pwd)/../gtk-4.12.5/install/lib/x86_64-linux-gnu/pkgconfig:$CLIPPER_DIR/lib/pkgconfig:$SSM_DIR/lib/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:$INSTALL_BASE/lib/pkgconfig:$MMDB2_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
-export CPPFLAGS="-I$(pwd)/.. -I$(pwd)/../rdkit -I$(pwd)/../gtk-4.12.5/install/include/gtk-4.0 -I$MMDB2_DIR/include -I$SSM_DIR/include -I$CLIPPER_DIR/include"
+export CPPFLAGS="-I$RDKIT_DIR/include -I$(pwd)/../gtk-4.12.5/install/include/gtk-4.0 -I$MMDB2_DIR/include -I$SSM_DIR/include -I$CLIPPER_DIR/include"
 
 # Detect the active Python version to keep headers and libs in sync
 PYTHON_VER=$(python3 -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
@@ -467,11 +462,12 @@ echo "Using Python ${PYTHON_VER}, PYTHON_LIBS=${PYTHON_LIBS_FLAG}"
     --with-boost="$BOOST_DIR" \
     --with-boost-libdir="$BOOST_DIR/lib" \
     --with-glm=/usr \
-    --with-rdkit-prefix="$(pwd)/../rdkit" \
-    CXXFLAGS="-g -O2 -Wall -Wno-unused -std=c++17 -include cstring -include fstream -fPIC -fpermissive -fopenmp -I/usr/include/python${PYTHON_VER} -I$MMDB2_DIR/include -I$DEPS_DIR/gemmi/include -DUSE_GEMMI=1 -DGEMMI_SHARED -DBOOST_IOSTREAMS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_SYSTEM_DYN_LINK -DBOOST_THREAD_DYN_LINK -DBOOST_IOSTREAMS_NO_LIB -DBOOST_SERIALIZATION_NO_LIB -DBOOST_SYSTEM_NO_LIB -DBOOST_THREAD_NO_LIB -DRDK_BUILD_CAIRO_SUPPORT -DRDK_64BIT_BUILD -DRDK_HAS_EIGEN3 -DRDK_USE_BOOST_IOSTREAMS -DRDK_USE_BOOST_SERIALIZATION -DCLIPPER_HAS_TOP8000 -DHAVE_SSMLIB -DMAKE_ENHANCED_LIGAND_TOOLS=1" \
+    --with-rdkit-prefix="$RDKIT_DIR" \
+    --with-coordgen \
+    CXXFLAGS="-g -O2 -Wall -Wno-unused -std=c++20 -include cstring -include fstream -fPIC -fpermissive -fopenmp -I/usr/include/python${PYTHON_VER} -I$RDKIT_DIR/include -I$MMDB2_DIR/include -I$DEPS_DIR/gemmi/include -DUSE_GEMMI=1 -DGEMMI_SHARED -DBOOST_IOSTREAMS_DYN_LINK -DBOOST_SERIALIZATION_DYN_LINK -DBOOST_SYSTEM_DYN_LINK -DBOOST_THREAD_DYN_LINK -DBOOST_IOSTREAMS_NO_LIB -DBOOST_SERIALIZATION_NO_LIB -DBOOST_SYSTEM_NO_LIB -DBOOST_THREAD_NO_LIB -DRDK_BUILD_CAIRO_SUPPORT -DRDK_64BIT_BUILD -DRDK_HAS_EIGEN3 -DRDK_USE_BOOST_IOSTREAMS -DRDK_USE_BOOST_SERIALIZATION -DCLIPPER_HAS_TOP8000 -DHAVE_SSMLIB -DMAKE_ENHANCED_LIGAND_TOOLS=1" \
     LDFLAGS="-L$DEPS_DIR/gemmi/lib -L$BOOST_DIR/lib -L$SSM_DIR/lib -L$MMDB2_DIR/lib -L$CLIPPER_DIR/lib -L$GTK_LIB -L$CAIRO_LIB -L$PANGO_LIB -L$HB_LIB -L$GLIB_LIB -L$RDKIT_LIB_DIR -Wl,-rpath,$BOOST_DIR/lib -Wl,-rpath,$GTK_LIB -Wl,-rpath,$CAIRO_LIB -Wl,-rpath,$PANGO_LIB -Wl,-rpath,$HB_LIB -Wl,-rpath,$GLIB_LIB -Wl,-rpath,$SSM_DIR/lib -Wl,-rpath,$MMDB2_DIR/lib -Wl,-rpath,$CLIPPER_DIR/lib -Wl,-rpath,$RDKIT_LIB_DIR" \
     LIBS="-lgemmi_cpp -lssm -lmmdb2 -lclipper-ccp4 -lclipper-core -lclipper-contrib -lclipper-mmdb -lclipper-minimol" \
-    RDKIT_LIBS="-L$RDKIT_LIB_DIR -Wl,-rpath,$RDKIT_LIB_DIR -lRDKitGraphMol -lRDKitSmilesParse -lRDKitFileParsers -lRDKitRDGeneral -lRDKitDataStructs -lRDKitMolDraw2D -lRDKitForceFieldHelpers -lRDKitDescriptors -lRDKitForceField -lRDKitSubstructMatch -lRDKitOptimizer -lRDKitDistGeomHelpers -lRDKitDistGeometry -lRDKitChemReactions -lRDKitAlignment -lRDKitEigenSolvers -lRDKitDepictor -lRDKitMolChemicalFeatures -lRDKitPartialCharges -lRDKitRDGeometryLib -lRDKitShapeHelpers -lRDKitFingerprints -lRDKitMolAlign -lRDKitMolTransforms -lRDKitChemTransforms -lRDKitGenericGroups -lRDKitRingDecomposerLib -lRDKitFilterCatalog -lRDKitCatalogs -lRDKitSubgraphs -lRDKitPartialCharges -lRDKitMolOps -lRDKitmaeparser -lRDKitcoordgen -lboost_serialization -lboost_iostreams" \
+    RDKIT_LIBS="-L$RDKIT_LIB_DIR -Wl,-rpath,$RDKIT_LIB_DIR -lRDKitGraphMol -lRDKitSmilesParse -lRDKitFileParsers -lRDKitRDGeneral -lRDKitDataStructs -lRDKitMolDraw2D -lRDKitForceFieldHelpers -lRDKitDescriptors -lRDKitForceField -lRDKitSubstructMatch -lRDKitOptimizer -lRDKitDistGeomHelpers -lRDKitDistGeometry -lRDKitChemReactions -lRDKitAlignment -lRDKitEigenSolvers -lRDKitDepictor -lRDKitMolChemicalFeatures -lRDKitPartialCharges -lRDKitRDGeometryLib -lRDKitShapeHelpers -lRDKitFingerprints -lRDKitMolAlign -lRDKitMolTransforms -lRDKitChemTransforms -lRDKitGenericGroups -lRDKitRingDecomposerLib -lRDKitFilterCatalog -lRDKitCatalogs -lRDKitSubgraphs -lRDKitPartialCharges -lRDKitMolOps -lRDKitmaeparser -lRDKitcoordgen -lRDKitRDChemDrawLib -lboost_serialization -lboost_iostreams" \
     PYTHON_LIBS="$PYTHON_LIBS_FLAG" || handle_error "Configure failed"
 
 # Cap parallel jobs to avoid OOM on machines with less RAM (e.g. Debian 12)
@@ -536,7 +532,7 @@ DEPS_DIR="\$BASE_DIR/dependencies"
 
 export COOT_PREFIX="\$BASE_DIR"
 export SYMINFO="\$BASE_DIR/share/coot/data/syminfo.lib"
-export LD_LIBRARY_PATH="\$BUILD_DIR/gtk-4.12.5/install/lib/x86_64-linux-gnu:\$BUILD_DIR/pango-1.52.0/install/lib/x86_64-linux-gnu:\$BUILD_DIR/harfbuzz-8.4.0/install/lib:\$BUILD_DIR/cairo-1.18.0/install/lib/x86_64-linux-gnu:\$BUILD_DIR/glib-2.82.2/install/lib:\$DEPS_DIR/gemmi/lib:\$DEPS_DIR/boost-1.87.0/lib:\$DEPS_DIR/rdkit-2024.09.4/lib:\$DEPS_DIR/ssm-1.4/lib:\$DEPS_DIR/mmdb2-2.0.22/lib:\$BASE_DIR/lib:\$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="\$BUILD_DIR/gtk-4.12.5/install/lib/x86_64-linux-gnu:\$BUILD_DIR/pango-1.52.0/install/lib/x86_64-linux-gnu:\$BUILD_DIR/harfbuzz-8.4.0/install/lib:\$BUILD_DIR/cairo-1.18.0/install/lib/x86_64-linux-gnu:\$BUILD_DIR/glib-2.82.2/install/lib:\$DEPS_DIR/gemmi/lib:\$DEPS_DIR/boost-1.87.0/lib:\$DEPS_DIR/rdkit-2025.09.6/lib:\$DEPS_DIR/ssm-1.4/lib:\$DEPS_DIR/mmdb2-2.0.22/lib:\$BASE_DIR/lib:\$LD_LIBRARY_PATH"
 export GSETTINGS_SCHEMA_DIR="\$BUILD_DIR/gtk-4.12.5/install/share/glib-2.0/schemas"
 export XDG_DATA_DIRS="\$BUILD_DIR/gtk-4.12.5/install/share:\$BUILD_DIR/glib-2.82.2/install/share:\${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 
