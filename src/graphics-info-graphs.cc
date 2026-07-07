@@ -151,12 +151,7 @@ void graphics_info_t::refresh_ramachandran_plot_model_list() {
    // noise
    // std::cout << "----------------------- refresh_ramachandran_plot_model_list --------- " << std::endl;
 
-   auto fn = +[] (GtkTreeModel* model, GtkTreePath* path, GtkTreeIter* iter, gpointer data) {
-      GtkListStore* list = GTK_LIST_STORE(model);
-      return gboolean(!gtk_list_store_remove(list,iter));
-   };
-
-   gtk_tree_model_foreach(GTK_TREE_MODEL(ramachandran_plot_model_list), fn, NULL);
+   gtk_list_store_clear(ramachandran_plot_model_list);
 
    for(int i=0; i<graphics_info_t::n_molecules(); i++) {
       if (graphics_info_t::molecules[i].has_model()) {
@@ -443,6 +438,7 @@ get_validation_data_for_rotamer_analysis(int imol) {
 
    if (nSelResidues > 2) {
 
+      graphics_info_t g;
       for (int ir=0; ir<nSelResidues; ir++) {
          mmdb::Residue *residue_p = SelResidues[ir];
          coot::residue_spec_t res_spec(residue_p);
@@ -453,16 +449,29 @@ get_validation_data_for_rotamer_analysis(int imol) {
 
          // double residue_density_score = coot::util::map_score(residue_atoms, n_residue_atoms, xmap, 1);
 
-         if (n_residue_atoms > 5) {
+         // Use the heavy-atom count, not the total atom count, so that the set of
+         // residues plotted does not depend on whether hydrogens have been added.
+         // (GLY and ALA have <= 5 heavy atoms and so are correctly skipped here.)
+         int n_heavy_atoms = 0;
+         for (int iat=0; iat<n_residue_atoms; iat++) {
+            std::string ele(residue_atoms[iat]->element);
+            if (ele != " H" && ele != " D")
+               n_heavy_atoms++;
+         }
 
-            // std::string res_name = residue_p->GetResName();
+         if (n_heavy_atoms > 5) {
+
+            std::string res_name = residue_p->GetResName();
             // coot::rotamer rot(residue_p);
             // coot::rotamer_probability_info_t rpi = rot.probability_of_this_rotamer();
+
+            // belt and braces test
+            if (res_name == "ALA") continue;
+            if (res_name == "GLY") continue;
 
             // 2026-03-02-PE - new style
             const std::string alt_conf;
             float rotamer_lowest_probability = 0.01;
-            graphics_info_t g;
             coot::rotamer_probability_info_t d_score = g.get_rotamer_probability(residue_p, alt_conf, mol, rotamer_lowest_probability, 1);
             float prob = d_score.probability;
             // std::cout << "probs " << coot::residue_spec_t(residue_p) << " :  " << prob << " " << d_score.probability << std::endl;
@@ -1044,6 +1053,20 @@ graphics_info_t::update_validation(int imol_changed_model) {
    if (coot_all_atom_contact_dots_are_begin_displayed_for(imol_changed_model)) {
       mmdb::Manager *mol = molecules[imol_changed_model].atom_sel.mol;
       coot_all_atom_contact_dots_instanced(mol, imol_changed_model);
+   }
+
+   // redraw the sequence view (CootSequenceView reads mmdb::Manager live in snapshot())
+   GtkWidget *seq_view_box = widget_from_builder("main_window_sequence_view_box");
+   if (seq_view_box) {
+      GtkWidget *item = gtk_widget_get_first_child(seq_view_box);
+      while (item) {
+         int imol_overlay = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(item), "imol"));
+         if (imol_overlay == imol_changed_model) {
+            GtkWidget *sv = GTK_WIDGET(g_object_get_data(G_OBJECT(item), "coot-sequence-view"));
+            if (sv) gtk_widget_queue_draw(sv);
+         }
+         item = gtk_widget_get_next_sibling(item);
+      }
    }
 }
 
